@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  orgMembers   OrgMember[]
+}
+
+model Organization {
+  id           String   @id @default(cuid())
+  name         String
+  logoUrl      String?
+  primaryColor String   @default("#0F766E")
+  plan         String   @default("trial") // trial | per_client | agency
+  stripeCustomerId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  members      OrgMember[]
+  clients      Client[]
+  scheduleDay  Int      @default(1) // monthly generate day stub
+}
+
+model OrgMember {
+  id     String @id @default(cuid())
+  role   String @default("owner") // owner | member
+  userId String
+  orgId  String
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+}
+
+model Client {
+  id               String   @id @default(cuid())
+  orgId            String
+  name             String
+  domain           String
+  contactEmail     String?
+  aiMentionsEnabled Boolean @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  org              Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  connections      Connection[]
+  workLogs         WorkLog[]
+  reportRuns       ReportRun[]
+  aiMentions       AiMention[]
+}
+
+model Connection {
+  id           String   @id @default(cuid())
+  clientId     String
+  type         String   // ga4 | gsc
+  provider     String   @default("mock") // mock | google
+  externalId   String?  // property id or site url
+  displayName  String?
+  accessToken  String?
+  refreshToken String?
+  metaJson     String?  // JSON blob
+  connectedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  client       Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, type])
+}
+
+model WorkLog {
+  id          String   @id @default(cuid())
+  clientId    String
+  periodStart DateTime
+  periodEnd   DateTime
+  title       String
+  body        String
+  category    String   @default("seo") // seo | content | technical | links | other
+  hours       Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model ReportRun {
+  id              String   @id @default(cuid())
+  clientId        String
+  periodStart     DateTime
+  periodEnd       DateTime
+  status          String   @default("draft") // draft | generating | ready | sent
+  metricsJson     String?  // MetricsSnapshot JSON
+  narrative       String?
+  nextActionsJson String?  // string[3]
+  isSample        Boolean  @default(false)
+  watermark       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model AiMention {
+  id         String   @id @default(cuid())
+  clientId   String
+  engine     String   // chatgpt | perplexity | gemini | claude
+  prompt     String
+  mentioned  Boolean  @default(false)
+  citationsJson String? // string[]
+  checkedAt  DateTime @default(now())
+  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
