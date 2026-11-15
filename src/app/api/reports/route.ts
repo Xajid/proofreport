@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { reportCreateSchema } from "@/lib/validators";
+import { apiErrorMessage, parsePeriodDate } from "@/lib/utils";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -32,8 +33,8 @@ export async function POST(req: Request) {
     const report = await prisma.reportRun.create({
       data: {
         clientId: data.clientId,
-        periodStart: new Date(data.periodStart),
-        periodEnd: new Date(data.periodEnd),
+        periodStart: parsePeriodDate(data.periodStart),
+        periodEnd: parsePeriodDate(data.periodEnd),
         status: "draft",
         isSample: data.isSample ?? false,
         watermark: data.isSample ?? false,
@@ -41,6 +42,6 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(report);
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : "Invalid" }, { status: 400 });
+    return NextResponse.json({ error: apiErrorMessage(e) }, { status: 400 });
   }
 }

@@ -1,8 +1,28 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { ZodError } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function apiErrorMessage(err: unknown, fallback = "Invalid request"): string {
+  if (err instanceof ZodError) {
+    const first = err.issues[0];
+    if (!first) return fallback;
+    const field = first.path.length ? `${first.path.join(".")}: ` : "";
+    return `${field}${first.message}`;
+  }
+  return err instanceof Error ? err.message : fallback;
+}
+
+export function parsePeriodDate(input: string): Date {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+    // Midday UTC avoids off-by-one display shifts across UTC-11..UTC+11 timezones
+    // while preserving inclusive period overlap comparisons.
+    return new Date(`${input}T12:00:00.000Z`);
+  }
+  return new Date(input);
 }
 
 export function formatNumber(n: number): string {

@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { clientSchema } from "@/lib/validators";
+import { apiErrorMessage } from "@/lib/utils";
+import { getLimits } from "@/lib/plan";
 
 async function assertClient(orgId: string, id: string) {
   return prisma.client.findFirst({
@@ -33,6 +35,23 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
   try {
     const data = clientSchema.partial().parse(await req.json());
+    if (data.aiMentionsEnabled) {
+      const org = await prisma.organization.findUnique({
+        where: { id: session.user.orgId },
+        select: { plan: true },
+      });
+      const limits = getLimits(org?.plan);
+      if (!limits.aiMentions) {
+        return NextResponse.json(
+          {
+            error: "AI Mentions (AEO visibility) requires an upgraded plan.",
+            code: "PLAN_LIMIT",
+            plan: org?.plan,
+          },
+          { status: 403 }
+        );
+      }
+    }
     const client = await prisma.client.update({
       where: { id },
       data: {
@@ -48,7 +67,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     });
     return NextResponse.json(client);
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : "Invalid" }, { status: 400 });
+    return NextResponse.json({ error: apiErrorMessage(e) }, { status: 400 });
   }
 }
 

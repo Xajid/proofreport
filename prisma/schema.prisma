@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -8,13 +9,15 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String?
-  passwordHash String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  orgMembers   OrgMember[]
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  name                String?
+  passwordHash        String?
+  resetToken          String?   @unique
+  resetTokenExpiresAt DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  orgMembers          OrgMember[]
 }
 
 model Organization {
@@ -90,19 +93,22 @@ model WorkLog {
 }
 
 model ReportRun {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   clientId        String
   periodStart     DateTime
   periodEnd       DateTime
-  status          String   @default("draft") // draft | generating | ready | sent
-  metricsJson     String?  // MetricsSnapshot JSON
+  status          String    @default("draft") // draft | generating | ready | sent
+  metricsJson     String?   // MetricsSnapshot JSON
   narrative       String?
-  nextActionsJson String?  // string[3]
-  isSample        Boolean  @default(false)
-  watermark       Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  nextActionsJson String?   // string[3]
+  shareToken      String?   @unique
+  sentAt          DateTime?
+  sentTo          String?
+  isSample        Boolean   @default(false)
+  watermark       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  client          Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
 }
 
 model AiMention {

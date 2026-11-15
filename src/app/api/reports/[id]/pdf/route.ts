@@ -4,11 +4,13 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { pdfRenderer } from "@/providers/pdf/renderer";
 import type { MetricsSnapshot } from "@/types/metrics";
+import { getLimits } from "@/lib/plan";
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
+  const inline = new URL(req.url).searchParams.get("inline") === "1";
 
   const report = await prisma.reportRun.findFirst({
     where: { id, client: { orgId: session.user.orgId } },
@@ -36,6 +38,26 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     (w) => w.periodStart <= report.periodEnd && w.periodEnd >= report.periodStart
   );
 
+  const pastRuns = await prisma.reportRun.findMany({
+    where: { clientId: report.clientId, metricsJson: { not: null } },
+    orderBy: { periodStart: "asc" },
+    take: 6,
+  });
+
+  const trendHistory = pastRuns.map((run) => {
+    const snap = JSON.parse(run.metricsJson!) as MetricsSnapshot;
+    return {
+      label: new Date(run.periodStart).toLocaleDateString("en-US", { month: "short" }),
+      sessions: snap.organic.sessions,
+      clicks: snap.search.clicks,
+      conversions: snap.conversions.total,
+    };
+  });
+
+  const limits = getLimits(report.client.org.plan);
+  const shouldWatermark = limits.watermark || Boolean(report.isSample);
+  const includeAiMentions = limits.aiMentions && report.client.aiMentionsEnabled;
+
   const buffer = await pdfRenderer.render({
     agencyName: report.client.org.name,
     logoUrl: report.client.org.logoUrl,
@@ -47,13 +69,15 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     narrative: report.narrative,
     nextActions,
     metrics,
+    trendHistory,
     workLogs: periodLogs.map((w) => ({
       title: w.title,
       body: w.body,
       category: w.category,
+      hours: w.hours,
     })),
-    watermark: report.watermark || report.isSample,
-    includeAiMentions: report.client.aiMentionsEnabled,
+    watermark: shouldWatermark,
+    includeAiMentions,
     aiMentions: report.client.aiMentions.map((a) => ({
       engine: a.engine,
       prompt: a.prompt,
@@ -65,7 +89,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="report-${report.client.domain}-${id}.pdf"`,
+      "Content-Disposition": `${inline ? "inline" : "attachment"}; filename="report-${report.client.domain}-${id}.pdf"`,
     },
   });
 }

@@ -10,6 +10,7 @@ export type MetricsProviderInput = {
   ga4PropertyId?: string | null;
   gscSiteUrl?: string | null;
   accessToken?: string | null;
+  refreshToken?: string | null;
 };
 
 export interface MetricsProvider {

@@ -3,72 +3,78 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/card";
+import { Plus, Users, Zap } from "lucide-react";
+import { ClientsTable } from "./clients-table";
 
 export default async function ClientsPage() {
   const session = await getServerSession(authOptions);
-  const clients = await prisma.client.findMany({
-    where: { orgId: session!.user.orgId! },
-    include: {
-      connections: true,
-      _count: { select: { workLogs: true, reportRuns: true } },
-    },
-    orderBy: { name: "asc" },
-  });
+  const orgId = session!.user.orgId!;
+
+  const [clients, org] = await Promise.all([
+    prisma.client.findMany({
+      where: { orgId },
+      include: {
+        connections: true,
+        _count: { select: { workLogs: true, reportRuns: true } },
+      },
+      orderBy: { name: "asc" },
+    }),
+    prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true } }),
+  ]);
+
+  const clientCount = clients.length;
+
+  const rows = clients.map((c) => ({
+    id: c.id,
+    name: c.name,
+    domain: c.domain,
+    aiMentionsEnabled: c.aiMentionsEnabled,
+    connectionsCount: c.connections.length,
+    workLogsCount: c._count.workLogs,
+    reportRunsCount: c._count.reportRuns,
+  }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-800">Clients</p>
-          <h1 className="font-display mt-1 text-3xl font-semibold text-slate-950">Portfolio</h1>
-          <p className="mt-1 text-sm text-slate-600">Domains you report on each month.</p>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-indigo-50 border border-indigo-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-widest text-indigo-700">
+              <Users className="h-3 w-3" />
+              Clients
+            </span>
+          </div>
+          <h1 className="font-display text-2xl font-semibold text-slate-900 sm:text-3xl">
+            Portfolio
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">Domains you report on each month.</p>
         </div>
         <Link href="/app/clients/new">
-          <Button>Add client</Button>
+          <Button size="sm" disabled={org?.plan === "trial" && clientCount >= 1}>
+            <Plus className="h-4 w-4" />
+            Add client
+          </Button>
         </Link>
       </div>
 
-      <div className="panel overflow-hidden">
-        <div className="hidden grid-cols-[1.4fr_1fr_0.7fr_0.7fr_0.7fr] gap-3 border-b border-slate-100 bg-slate-50/80 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 sm:grid">
-          <span>Client</span>
-          <span>Domain</span>
-          <span>Connections</span>
-          <span>Work logs</span>
-          <span>Reports</span>
-        </div>
-        {clients.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="font-medium text-slate-900">No clients yet</p>
-            <p className="mt-1 text-sm text-slate-600">
-              Add a domain to start logging work and generating reports.
-            </p>
-            <Link href="/app/clients/new" className="mt-4 inline-block">
-              <Button>Add your first client</Button>
-            </Link>
+      {org?.plan === "trial" && clientCount >= 1 && (
+        <div className="rounded-[var(--radius)] border border-amber-200/80 bg-amber-50/80 px-5 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Zap className="h-5 w-5 text-amber-600 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-amber-900">Trial limit reached</p>
+              <p className="text-sm text-amber-700 mt-0.5">Your trial allows 1 client. Upgrade to add your full roster.</p>
+            </div>
           </div>
-        ) : (
-          <ul className="divide-y divide-slate-100">
-            {clients.map((c) => (
-              <li key={c.id}>
-                <Link
-                  href={`/app/clients/${c.id}`}
-                  className="grid gap-1 px-4 py-3.5 transition hover:bg-slate-50 sm:grid-cols-[1.4fr_1fr_0.7fr_0.7fr_0.7fr] sm:items-center sm:gap-3"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-slate-900">{c.name}</span>
-                    {c.aiMentionsEnabled ? <Badge tone="brand">AI mentions</Badge> : null}
-                  </div>
-                  <span className="font-mono text-sm text-slate-600">{c.domain}</span>
-                  <span className="text-sm text-slate-600">{c.connections.length}</span>
-                  <span className="text-sm text-slate-600">{c._count.workLogs}</span>
-                  <span className="text-sm text-slate-600">{c._count.reportRuns}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+          <Link href="/pricing">
+            <Button size="sm" className="shrink-0 bg-amber-600 hover:bg-amber-700 text-white border-0">
+              Upgrade now
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      <ClientsTable clients={rows} />
     </div>
   );
 }

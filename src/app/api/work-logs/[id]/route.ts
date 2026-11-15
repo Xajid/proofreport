@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { workLogSchema } from "@/lib/validators";
+import { apiErrorMessage, parsePeriodDate } from "@/lib/utils";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -23,13 +24,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         ...(data.body ? { body: data.body } : {}),
         ...(data.category ? { category: data.category } : {}),
         ...(data.hours !== undefined ? { hours: data.hours } : {}),
-        ...(data.periodStart ? { periodStart: new Date(data.periodStart) } : {}),
-        ...(data.periodEnd ? { periodEnd: new Date(data.periodEnd) } : {}),
+        ...(data.periodStart ? { periodStart: parsePeriodDate(data.periodStart) } : {}),
+        ...(data.periodEnd ? { periodEnd: parsePeriodDate(data.periodEnd) } : {}),
       },
     });
     return NextResponse.json(log);
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : "Invalid" }, { status: 400 });
+    return NextResponse.json({ error: apiErrorMessage(e) }, { status: 400 });
   }
 }
 

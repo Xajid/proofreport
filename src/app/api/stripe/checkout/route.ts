@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 
 export async function POST(req: Request) {
@@ -11,6 +12,10 @@ export async function POST(req: Request) {
   const origin = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
   if (!process.env.STRIPE_SECRET_KEY) {
+    await prisma.organization.update({
+      where: { id: session.user.orgId },
+      data: { plan },
+    });
     return NextResponse.json({
       mode: "mock",
       message: "Stripe not configured — mock checkout success",

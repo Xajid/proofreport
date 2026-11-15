@@ -3,25 +3,32 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45 active:translate-y-px",
+  "inline-flex items-center justify-center gap-2 rounded-[8px] text-sm font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.98] select-none",
   {
     variants: {
       variant: {
         default:
-          "bg-[var(--brand)] text-white shadow-[0_1px_0_rgba(255,255,255,0.12)_inset,0_1px_2px_rgba(15,23,42,0.18)] hover:bg-[var(--brand-strong)]",
+          "bg-[var(--brand)] text-white shadow-[var(--shadow-brand)] hover:bg-[var(--brand-hover)] hover:shadow-[0_6px_20px_rgba(13,110,104,0.32)]",
         secondary:
-          "bg-slate-900 text-white hover:bg-slate-800 shadow-[0_1px_2px_rgba(15,23,42,0.12)]",
+          "bg-slate-900 text-white shadow-[var(--shadow-sm)] hover:bg-slate-800",
         outline:
-          "border border-slate-300 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50",
-        ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-        soft: "bg-[var(--brand-mist)] text-[var(--brand-strong)] hover:bg-[var(--brand-soft)]",
-        danger: "bg-[var(--danger)] text-white hover:bg-red-800",
+          "border border-slate-200 bg-white text-slate-700 shadow-[var(--shadow-xs)] hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900",
+        ghost:
+          "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+        soft:
+          "bg-[var(--brand-mist)] text-[var(--brand-strong)] border border-[var(--brand-soft)] hover:bg-[var(--brand-soft)] hover:border-teal-200",
+        danger:
+          "bg-[var(--danger)] text-white shadow-[var(--shadow-sm)] hover:bg-red-700",
+        "ghost-danger":
+          "text-red-600 hover:bg-red-50 hover:text-red-700",
       },
       size: {
-        default: "h-10 px-4",
-        sm: "h-8 px-3 text-xs",
-        lg: "h-11 px-5 text-[15px]",
-        icon: "h-9 w-9",
+        default: "h-9 px-4",
+        sm: "h-8 px-3 text-xs rounded-[7px]",
+        lg: "h-11 px-6 text-[15px] rounded-[10px]",
+        xl: "h-12 px-8 text-base rounded-[10px]",
+        icon: "h-9 w-9 rounded-[8px]",
+        "icon-sm": "h-7 w-7 rounded-[6px]",
       },
     },
     defaultVariants: { variant: "default", size: "default" },

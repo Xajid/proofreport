@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { metricsProvider } from "@/providers/metrics";
 import { narrativeProvider } from "@/providers/narrative";
 import { periodLabel } from "@/lib/utils";
+import { getLimits } from "@/lib/plan";
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -21,6 +22,9 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   });
   if (!report) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const org = await prisma.organization.findUnique({ where: { id: report.client.org.id } });
+  const limits = getLimits(org?.plan ?? "trial");
+
   await prisma.reportRun.update({ where: { id }, data: { status: "generating" } });
 
   const ga4 = report.client.connections.find((c) => c.type === "ga4");
@@ -36,6 +40,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
     ga4PropertyId: ga4?.externalId,
     gscSiteUrl: gsc?.externalId,
     accessToken: ga4?.accessToken || gsc?.accessToken,
+    refreshToken: ga4?.refreshToken || gsc?.refreshToken,
   });
 
   const periodLogs = report.client.workLogs.filter((w) => {
@@ -61,6 +66,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       metricsJson: JSON.stringify(metrics),
       narrative: narrative.narrative,
       nextActionsJson: JSON.stringify(narrative.nextActions),
+      watermark: limits.watermark,
     },
   });
 

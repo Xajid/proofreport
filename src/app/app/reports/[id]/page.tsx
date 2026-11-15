@@ -10,7 +10,15 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const report = await prisma.reportRun.findFirst({
     where: { id, client: { orgId: session!.user.orgId! } },
     include: {
-      client: { select: { name: true, domain: true, aiMentionsEnabled: true } },
+      client: {
+        select: {
+          id: true,
+          name: true,
+          domain: true,
+          contactEmail: true,
+          aiMentionsEnabled: true,
+        },
+      },
     },
   });
   if (!report) notFound();
@@ -21,6 +29,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         ...report,
         periodStart: report.periodStart.toISOString(),
         periodEnd: report.periodEnd.toISOString(),
+        sentAt: report.sentAt ? report.sentAt.toISOString() : null,
       }}
     />
   );

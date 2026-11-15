@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validators";
+import { apiErrorMessage } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
@@ -41,7 +42,6 @@ export async function POST(req: Request) {
       orgId: user.orgMembers[0]?.orgId,
     });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Invalid request";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json({ error: apiErrorMessage(e) }, { status: 400 });
   }
 }

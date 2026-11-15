@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { checkIsAdminEmail } from "@/lib/admin";
 import { AppShell } from "@/components/app-shell";
 import { Providers } from "@/components/providers";
 
@@ -8,9 +10,30 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login");
 
+  const org = session.user.orgId
+    ? await prisma.organization.findUnique({
+        where: { id: session.user.orgId },
+        select: { name: true, plan: true },
+      })
+    : null;
+
+  const orgId = session.user.orgId;
+  const clientCount = orgId
+    ? await prisma.client.count({ where: { orgId } })
+    : 0;
+
+  const isAdmin = checkIsAdminEmail(session.user.email);
+
   return (
     <Providers>
-      <AppShell orgName={session.user.orgName}>{children}</AppShell>
+      <AppShell
+        orgName={org?.name ?? session.user.orgName}
+        plan={org?.plan ?? undefined}
+        clientCount={clientCount}
+        isAdmin={isAdmin}
+      >
+        {children}
+      </AppShell>
     </Providers>
   );
 }

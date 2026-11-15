@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { reportUpdateSchema } from "@/lib/validators";
+import { apiErrorMessage } from "@/lib/utils";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -45,6 +46,19 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     });
     return NextResponse.json(report);
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : "Invalid" }, { status: 400 });
+    return NextResponse.json({ error: apiErrorMessage(e) }, { status: 400 });
   }
+}
+
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id } = await params;
+  const existing = await prisma.reportRun.findFirst({
+    where: { id, client: { orgId: session.user.orgId } },
+  });
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  await prisma.reportRun.delete({ where: { id } });
+  return NextResponse.json({ ok: true });
 }

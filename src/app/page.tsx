@@ -1,141 +1,116 @@
-import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
-import { Button } from "@/components/ui/button";
+import { LandingHeroInteractive } from "@/components/landing-hero-interactive";
+import { HowItWorksInteractive } from "@/components/how-it-works-interactive";
+import { LandingPricing } from "@/components/landing-pricing";
+import {
+  BarChart3,
+  Shield,
+  Zap,
+  Users,
+  Clock,
+} from "lucide-react";
+
+const WHY_CARDS = [
+  {
+    icon: Shield,
+    title: "100% White-label",
+    body: "Your agency name, logo, brand accent colors, and custom domains. Your clients will never see ProofReport anywhere.",
+  },
+  {
+    icon: BarChart3,
+    title: "Verified Google GA4 & GSC",
+    body: "Official Google OAuth pulls actual organic sessions, rankings, CTR, and conversion goals directly — no CSV exports.",
+  },
+  {
+    icon: Zap,
+    title: "Causality-Focused AI Narratives",
+    body: "GPT-4 turns dry metrics and your logged hours into a compelling story that justifies your retainer month after month.",
+  },
+];
+
+const STATS = [
+  { value: "5 mins", label: "average time to review & send", icon: Clock },
+  { value: "100%", label: "white-label — your brand, not ours", icon: Shield },
+  { value: "GA4 + GSC", label: "real live data, zero guesswork", icon: BarChart3 },
+  { value: "14-day", label: "free trial, no credit card needed", icon: Users },
+];
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen surface-mesh">
       <div className="hero-stage min-h-[100svh]">
         <SiteHeader />
-        <section className="relative z-10 mx-auto grid max-w-6xl gap-10 px-6 pb-16 pt-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-12 lg:pb-24 lg:pt-10">
-          <div className="animate-rise">
-            <p className="font-display text-5xl font-semibold leading-[0.98] tracking-tight text-slate-950 sm:text-6xl lg:text-[4.25rem]">
-              ProofReport
-            </p>
-            <h1 className="mt-6 max-w-xl text-[1.45rem] font-medium leading-snug text-slate-800 sm:text-[1.7rem]">
-              Client-ready SEO reports that prove the work — every month.
-            </h1>
-            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-slate-600">
-              Connect metrics, log the work, generate an executive narrative, and ship a branded PDF
-              your clients actually read.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link href="/register">
-                <Button size="lg">Start free trial</Button>
-              </Link>
-              <Link href="/sample">
-                <Button size="lg" variant="outline">
-                  View sample report
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          <div className="animate-rise-delay relative min-h-[360px] lg:min-h-[480px]">
-            <div className="animate-float report-canvas absolute inset-0 overflow-hidden rounded-[18px] p-7 text-teal-50 sm:p-9">
-              <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-100/75">
-                <span>Monthly SEO Report</span>
-                <span>Oct 2026</span>
-              </div>
-              <p className="mt-8 font-display text-3xl font-semibold leading-tight text-white sm:text-4xl">
-                Sessions +14.2%. Clicks +9.8%. Tied to the landing-page refreshes and crawl fixes
-                logged this month.
-              </p>
-              <div className="mt-10 grid grid-cols-3 gap-3">
-                {[
-                  ["Sessions", "3,842"],
-                  ["Clicks", "1,904"],
-                  ["Conv.", "47"],
-                ].map(([label, value]) => (
-                  <div key={label} className="rounded-lg border border-white/10 bg-white/10 px-3 py-3 backdrop-blur-sm">
-                    <p className="text-[11px] uppercase tracking-wide text-teal-100/70">{label}</p>
-                    <p className="mt-1 text-xl font-semibold text-white">{value}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-8 border-t border-white/10 pt-5 text-sm text-teal-50/80">
-                Prepared for Bright Plumbing Co. · Northline SEO
-              </div>
-            </div>
-          </div>
-        </section>
+        <LandingHeroInteractive />
       </div>
 
-      <section className="border-y border-slate-200/80 bg-white/70">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-800">
-            Proof-of-work engine
-          </p>
-          <h2 className="font-display mt-3 max-w-2xl text-3xl font-semibold text-slate-950 sm:text-4xl">
-            From work log to client narrative in one pass.
-          </h2>
-          <p className="mt-3 max-w-2xl text-slate-600">
-            Dashboards show charts. ProofReport ships the story that connects your hours to their
-            outcomes — ready to send.
-          </p>
-          <ol className="mt-12 grid gap-8 md:grid-cols-4">
-            {[
-              ["01", "Work log", "Capture period bullets your clients can understand."],
-              ["02", "Metrics", "Pull GA4 + Search Console deltas automatically."],
-              ["03", "Narrative", "AI or template summary that cites both sides."],
-              ["04", "Branded PDF", "Edit next actions, export, and send."],
-            ].map(([n, title, body], i) => (
-              <li
-                key={n}
-                className="animate-rise border-t border-slate-200 pt-5"
-                style={{ animationDelay: `${0.05 * i}s` }}
-              >
-                <p className="font-mono text-xs font-medium text-teal-800">{n}</p>
-                <p className="mt-2 text-lg font-semibold text-slate-900">{title}</p>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">{body}</p>
-              </li>
+      {/* ── Social Proof Bar ── */}
+      <section className="border-y border-slate-200/70 bg-white/95 backdrop-blur-sm shadow-[var(--shadow-xs)]">
+        <div className="mx-auto max-w-6xl px-6 py-10">
+          <dl className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            {STATS.map(({ value, label, icon: Icon }) => (
+              <div key={value} className="flex flex-col items-center text-center">
+                <Icon className="mb-2 h-4 w-4 text-teal-600" />
+                <dt className="font-display text-2xl font-bold text-slate-900">
+                  {value}
+                </dt>
+                <dd className="mt-1 text-xs text-slate-500 font-medium">{label}</dd>
+              </div>
             ))}
-          </ol>
+          </dl>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div>
-            <h2 className="font-display text-3xl font-semibold text-slate-950 sm:text-4xl">
-              Built for freelancers and lean agencies.
-            </h2>
-            <p className="mt-4 max-w-xl text-slate-600">
-              White-label branding, monthly schedule stub, optional AI mentions page, and pricing
-              that scales from one client to a full roster.
-            </p>
-            <ul className="mt-8 space-y-3 text-sm text-slate-700">
-              {[
-                "Agency logo, color, and cover branding",
-                "Editable executive narrative before send",
-                "Watermarked sample reports for sales conversations",
-              ].map((item) => (
-                <li key={item} className="flex gap-3">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-700" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="panel p-8">
-            <p className="text-sm font-semibold text-teal-800">From</p>
-            <p className="font-display mt-2 text-4xl font-semibold text-slate-950">
-              $49<span className="text-lg font-medium text-slate-500">/client/mo</span>
-            </p>
-            <p className="mt-3 text-sm text-slate-600">
-              Agency seats from $199. AI visibility page as an add-on.
-            </p>
-            <Link href="/pricing" className="mt-6 inline-block">
-              <Button className="w-full sm:w-auto">See pricing</Button>
-            </Link>
-          </div>
+      {/* ── Interactive 4-Step Agency Workflow ── */}
+      <HowItWorksInteractive />
+
+      {/* ── Why Agencies Choose ProofReport ── */}
+      <section className="mx-auto max-w-6xl px-6 py-24">
+        <div className="mb-14 text-center max-w-2xl mx-auto">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
+            Built strictly for SEO operators
+          </p>
+          <h2 className="font-display mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
+            Why agencies switch to ProofReport
+          </h2>
+          <p className="mt-3 text-slate-500 text-[15px]">
+            Traditional dashboard tools dump raw numbers that confuse clients. ProofReport builds the bridge between what you did and why their traffic moved.
+          </p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {WHY_CARDS.map(({ icon: Icon, title, body }) => (
+            <div
+              key={title}
+              className="panel panel-hover rounded-[var(--radius-lg)] p-8 border-slate-200/80 bg-white"
+            >
+              <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-[10px] bg-teal-50 border border-teal-100/80 text-teal-700">
+                <Icon className="h-5 w-5" />
+              </div>
+              <p className="font-display text-lg font-semibold text-slate-900">{title}</p>
+              <p className="mt-2.5 text-sm leading-relaxed text-slate-500">
+                {body}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
-      <footer className="border-t border-slate-200 bg-white/60">
+      {/* ── Pricing Section with Monthly/Annual Toggle & FAQs ── */}
+      <LandingPricing />
+
+      {/* ── Footer ── */}
+      <footer className="border-t border-slate-200/80 bg-white/70 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-10 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-display text-base font-semibold text-slate-800">ProofReport</p>
-          <p>Enterprise client reporting for SEO operators</p>
+          <div className="flex items-center gap-2">
+            <div className="flex h-6 w-6 items-center justify-center rounded-[6px] bg-teal-700 shadow-xs">
+              <span className="text-[9px] font-bold text-white">PR</span>
+            </div>
+            <p className="font-display text-sm font-semibold text-slate-800">
+              ProofReport
+            </p>
+          </div>
+          <p className="text-xs">
+            Client reporting for SEO agencies — fast, branded, and provable.
+          </p>
         </div>
       </footer>
     </div>
