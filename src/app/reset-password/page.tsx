@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, CheckCircle2, FileText } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,11 +48,8 @@ function ResetPasswordInner() {
           Back to sign in
         </Link>
 
-        <div className="mb-6 flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-teal-700">
-            <FileText className="h-4 w-4 text-white" />
-          </div>
-          <span className="font-display text-lg font-semibold text-slate-900">ProofReport</span>
+        <div className="mb-6">
+          <BrandLogo href="/" size="md" />
         </div>
 
         <div className="panel p-6">

@@ -2,6 +2,7 @@ import { SiteHeader } from "@/components/site-header";
 import { LandingHeroInteractive } from "@/components/landing-hero-interactive";
 import { HowItWorksInteractive } from "@/components/how-it-works-interactive";
 import { LandingPricing } from "@/components/landing-pricing";
+import { BrandLogo } from "@/components/brand-logo";
 import {
   BarChart3,
   Shield,
@@ -100,14 +101,7 @@ export default function LandingPage() {
       {/* ── Footer ── */}
       <footer className="border-t border-slate-200/80 bg-white/70 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-10 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-[6px] bg-teal-700 shadow-xs">
-              <span className="text-[9px] font-bold text-white">PR</span>
-            </div>
-            <p className="font-display text-sm font-semibold text-slate-800">
-              ProofReport
-            </p>
-          </div>
+          <BrandLogo href="/" size="sm" />
           <p className="text-xs">
             Client reporting for SEO agencies — fast, branded, and provable.
           </p>
