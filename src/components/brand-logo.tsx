@@ -122,13 +122,10 @@ export function BrandLogo({
   };
 
   const isLight = tone === "light";
-  const isDark = tone === "dark";
 
   const primaryTextColor = isLight
     ? "text-white"
-    : isDark
-    ? "text-slate-900"
-    : "text-slate-900 dark:text-white";
+    : "text-slate-900";
 
   const secondaryTextColor = isLight
     ? "text-teal-300"
