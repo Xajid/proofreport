@@ -16,7 +16,7 @@ function run(cmd, args) {
 }
 
 try {
-  run("npx", ["prisma", "db", "push", "--skip-generate"]);
+  run("npx", ["prisma", "db", "push", "--skip-generate", "--accept-data-loss"]);
   run("npx", ["tsx", "prisma/seed.ts"]);
   console.log("db-setup: complete!");
 } catch (err) {
