@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
-import path from "path";
+
+const isStandalone = process.env.OUTPUT_STANDALONE === "true";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
-  outputFileTracingRoot: path.join(__dirname),
   serverExternalPackages: ["@react-pdf/renderer"],
+  ...(isStandalone ? { output: "standalone" } : {}),
 };
 
 export default nextConfig;

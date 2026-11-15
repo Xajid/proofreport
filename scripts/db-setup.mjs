@@ -7,9 +7,19 @@ if (!url) {
 }
 
 function run(cmd, args) {
+  console.log(`db-setup: running ${cmd} ${args.join(" ")}...`);
   const res = spawnSync(cmd, args, { stdio: "inherit", shell: false });
-  if (res.status !== 0) process.exit(res.status ?? 1);
+  if (res.status !== 0) {
+    console.error(`db-setup: ${cmd} ${args.join(" ")} exited with status ${res.status}`);
+    process.exit(res.status ?? 1);
+  }
 }
 
-run("npx", ["prisma", "db", "push"]);
-run("npx", ["tsx", "prisma/seed.ts"]);
+try {
+  run("npx", ["prisma", "db", "push", "--skip-generate"]);
+  run("npx", ["tsx", "prisma/seed.ts"]);
+  console.log("db-setup: complete!");
+} catch (err) {
+  console.error("db-setup failed:", err);
+  process.exit(1);
+}
