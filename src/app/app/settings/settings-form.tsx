@@ -95,11 +95,16 @@ export function SettingsForm() {
       });
     const checkout = search.get("checkout");
     if (checkout) {
-      setMsg(
-        checkout.startsWith("mock")
-          ? `Mock checkout complete (${search.get("plan") || "plan"}). Add STRIPE_SECRET_KEY for live test mode.`
-          : "Stripe checkout returned successfully."
-      );
+      const planName = search.get("plan") || "plan";
+      if (checkout === "success") {
+        setMsg(`🎉 Payment confirmed! Your ${planName.replace("_", " ")} plan is now active.`);
+      } else if (checkout === "cancel") {
+        setMsg("Checkout was cancelled. You can try again anytime from the pricing page.");
+      } else if (checkout.startsWith("mock")) {
+        setMsg(`Plan upgraded to ${planName.replace("_", " ")} (demo mode — no payment gateway configured).`);
+      } else {
+        setMsg("Checkout returned. Your plan will update shortly once payment confirms.");
+      }
     }
   }, [search]);
 
@@ -149,10 +154,12 @@ export function SettingsForm() {
       {msg && (
         <div
           className={`rounded-[9px] px-4 py-3 text-sm font-medium animate-scale-in ${
-            msg.includes("✓") || msg.includes("successfully")
+            msg.includes("✓") || msg.includes("successfully") || msg.includes("Payment confirmed") || msg.includes("🎉")
               ? "toast-success"
               : msg.includes("failed") || msg.includes("Invalid")
               ? "border border-red-200 bg-red-50 text-red-700"
+              : msg.includes("cancelled")
+              ? "border border-amber-200 bg-amber-50 text-amber-800"
               : "toast-info"
           }`}
         >

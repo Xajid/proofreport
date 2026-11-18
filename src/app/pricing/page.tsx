@@ -2,33 +2,58 @@
 
 import Link from "next/link";
 import { useSession, SessionProvider } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Zap } from "lucide-react";
+import { CheckCircle2, Zap, Shield, ArrowRight, AlertCircle } from "lucide-react";
 
 function PricingInner() {
   const { data: session } = useSession();
+  const search = useSearchParams();
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState("");
+
+  const cancelled = search.get("checkout") === "cancel";
 
   async function checkout(plan: "per_client" | "agency") {
     if (!session) {
       window.location.href = "/register";
       return;
     }
-    const res = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan }),
-    });
-    const data = await res.json();
-    if (data.redirectUrl) window.location.href = data.redirectUrl;
+    setLoading(plan);
+    setError("");
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Something went wrong. Please try again.");
+        setLoading(null);
+        return;
+      }
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        setError("No checkout URL returned. Please check your billing configuration.");
+        setLoading(null);
+      }
+    } catch {
+      setError("Network error — please check your connection and try again.");
+      setLoading(null);
+    }
   }
 
   const plans = [
     {
-      name: "Sample",
-      price: "Free",
+      id: "sample" as const,
+      name: "Free Sample",
+      price: "$0",
       suffix: null,
-      detail: "Watermarked PDF to close prospects.",
+      detail: "Watermarked PDF to close prospects in sales calls.",
       cta: (
         <Link href="/sample">
           <Button variant="outline" className="w-full" size="lg">
@@ -36,45 +61,84 @@ function PricingInner() {
           </Button>
         </Link>
       ),
-      features: ["Full report structure", "SAMPLE watermark", "Share in sales calls"],
+      features: [
+        "Full report structure",
+        "SAMPLE watermark on PDF",
+        "Share link for sales calls",
+        "1 active client domain",
+      ],
       featured: false,
       badge: null,
     },
     {
-      name: "Per client",
-      price: "$49–$99",
-      suffix: "/mo",
-      detail: "Full narrative engine for freelancers.",
+      id: "per_client" as const,
+      name: "Per Client",
+      price: "$49",
+      suffix: "/client/mo",
+      detail: "Full narrative engine for freelancers & boutique agencies.",
       cta: (
-        <Button className="w-full" size="lg" onClick={() => checkout("per_client")}>
-          <Zap className="h-4 w-4" />
-          Start per-client
+        <Button
+          className="w-full"
+          size="lg"
+          onClick={() => checkout("per_client")}
+          disabled={loading === "per_client"}
+        >
+          {loading === "per_client" ? (
+            <span className="flex items-center gap-2">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              Redirecting…
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              Get started
+            </span>
+          )}
         </Button>
       ),
       features: [
-        "Work log + metrics narrative",
-        "Branded PDF export",
-        "GA4 + GSC connectors",
-        "AI mentions add-on available",
+        "Work log + AI executive narrative",
+        "Branded PDF export — no watermark",
+        "GA4 + Search Console auto-pull",
+        "AI mentions (AEO visibility)",
+        "Client share links & email delivery",
       ],
       featured: true,
       badge: "Most popular",
     },
     {
-      name: "Agency seat",
-      price: "$199–$499",
+      id: "agency" as const,
+      name: "Unlimited Agency",
+      price: "$249",
       suffix: "/mo",
-      detail: "Shared branding for 10–25 clients.",
+      detail: "Unlimited clients, team seats, and scheduled auto-generation.",
       cta: (
-        <Button variant="secondary" className="w-full" size="lg" onClick={() => checkout("agency")}>
-          Start agency
+        <Button
+          variant="secondary"
+          className="w-full"
+          size="lg"
+          onClick={() => checkout("agency")}
+          disabled={loading === "agency"}
+        >
+          {loading === "agency" ? (
+            <span className="flex items-center gap-2">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              Redirecting…
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              Start agency plan
+              <ArrowRight className="h-4 w-4" />
+            </span>
+          )}
         </Button>
       ),
       features: [
-        "Multi-client workspace",
-        "Schedule stub",
-        "Team-ready branding",
-        "Priority support path",
+        "Everything in Per Client",
+        "Unlimited client domains",
+        "Monthly auto-generate on the 1st",
+        "Team-ready branding & seats",
+        "Priority support",
       ],
       featured: false,
       badge: null,
@@ -96,11 +160,27 @@ function PricingInner() {
           </p>
         </div>
 
+        {/* Cancel notice */}
+        {cancelled && (
+          <div className="mb-8 flex items-center gap-3 rounded-[10px] border border-amber-200 bg-amber-50 px-5 py-3.5 text-sm text-amber-800 animate-scale-in">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            Checkout was cancelled. No charges were made — pick a plan whenever you&apos;re ready.
+          </div>
+        )}
+
+        {/* Error banner */}
+        {error && (
+          <div className="mb-8 flex items-center gap-3 rounded-[10px] border border-red-200 bg-red-50 px-5 py-3.5 text-sm text-red-700 animate-scale-in">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            {error}
+          </div>
+        )}
+
         {/* Plan cards */}
         <div className="grid gap-5 lg:grid-cols-3 lg:items-start">
           {plans.map((plan) => (
             <div
-              key={plan.name}
+              key={plan.id}
               className={`relative flex flex-col rounded-[var(--radius-lg)] border bg-white p-7 shadow-[var(--shadow-sm)] transition-shadow hover:shadow-[var(--shadow-md)] ${
                 plan.featured
                   ? "border-teal-600/30 shadow-[var(--shadow-md)] ring-1 ring-teal-600/15"
@@ -141,13 +221,19 @@ function PricingInner() {
           ))}
         </div>
 
-        {/* Footer note */}
-        <p className="mt-10 text-center text-sm text-slate-500">
-          All plans include a 14-day free trial. No credit card required to start.{" "}
-          <Link href="/register" className="font-semibold text-teal-700 hover:underline">
-            Get started →
-          </Link>
-        </p>
+        {/* Trust footer */}
+        <div className="mt-12 flex flex-col items-center gap-3 text-center">
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <Shield className="h-4 w-4 text-teal-600" />
+            Secure checkout powered by Dodo Payments · Cancel anytime
+          </div>
+          <p className="text-sm text-slate-500">
+            All plans include a 14-day free trial. No credit card required to start.{" "}
+            <Link href="/register" className="font-semibold text-teal-700 hover:underline">
+              Get started →
+            </Link>
+          </p>
+        </div>
       </main>
     </div>
   );
@@ -156,7 +242,9 @@ function PricingInner() {
 export default function PricingPage() {
   return (
     <SessionProvider>
-      <PricingInner />
+      <Suspense>
+        <PricingInner />
+      </Suspense>
     </SessionProvider>
   );
 }
