@@ -3,11 +3,11 @@ import { authOptions } from "./auth";
 
 /**
  * Checks whether an email or the current session belongs to a Super Admin.
- * Default admin in dev: demo@proofreport.app (configurable via ADMIN_EMAIL env var).
+ * Default admin in dev: demo@getsearchproof.com (configurable via ADMIN_EMAIL env var).
  */
 export function checkIsAdminEmail(email?: string | null): boolean {
   if (!email) return false;
-  const adminConfig = process.env.ADMIN_EMAIL || "demo@proofreport.app";
+  const adminConfig = process.env.ADMIN_EMAIL || "demo@getsearchproof.com";
   const allowed = adminConfig
     .split(",")
     .map((e) => e.trim().toLowerCase())

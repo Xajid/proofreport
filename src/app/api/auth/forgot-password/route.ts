@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { apiErrorMessage } from "@/lib/utils";
+import { renderPasswordResetEmailHtml } from "@/lib/email-templates";
 
 const schema = z.object({
   email: z.string().email(),
@@ -40,10 +41,10 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: process.env.EMAIL_FROM || "ProofReport <no-reply@proofreport.app>",
+          from: process.env.EMAIL_FROM || "SearchProof <info@getsearchproof.com>",
           to: [user.email],
-          subject: "Reset your ProofReport password",
-          html: `<p>Click <a href="${resetUrl}">here</a> to reset your ProofReport password. This link expires in 1 hour.</p>`,
+          subject: "Reset your SearchProof password",
+          html: renderPasswordResetEmailHtml({ resetUrl, userEmail: user.email }),
         }),
       });
       return NextResponse.json({

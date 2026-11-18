@@ -5,8 +5,10 @@ import { startOfMonth, endOfMonth, subMonths } from "date-fns";
 const prisma = new PrismaClient();
 
 async function main() {
-  const existing = await prisma.user.findUnique({
-    where: { email: "demo@proofreport.app" },
+  const existing = await prisma.user.findFirst({
+    where: {
+      email: { in: ["demo@getsearchproof.com", "info@getsearchproof.com"] },
+    },
   });
   if (existing) {
     console.log("Seed skipped — demo user already exists");
@@ -19,7 +21,7 @@ async function main() {
 
   const user = await prisma.user.create({
     data: {
-      email: "demo@proofreport.app",
+      email: "demo@getsearchproof.com",
       name: "Sajid Hussain",
       passwordHash,
       orgMembers: {
@@ -139,7 +141,7 @@ async function main() {
   });
 
   console.log("Seed complete");
-  console.log("  Login: demo@proofreport.app / demo12345");
+  console.log("  Login: demo@getsearchproof.com / demo12345");
 }
 
 main()

@@ -12,7 +12,7 @@ import { BrandLogo } from "@/components/brand-logo";
 const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState(isDemo ? "demo@proofreport.app" : "");
+  const [email, setEmail] = useState(isDemo ? "demo@getsearchproof.com" : "");
   const [password, setPassword] = useState(isDemo ? "demo12345" : "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -65,7 +65,7 @@ export default function LoginPage() {
             {/* Testimonial card */}
             <div className="mt-10 rounded-[12px] border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
               <p className="text-sm leading-relaxed text-slate-300 italic">
-                &ldquo;ProofReport cut our monthly report time from 3 hours to 20 minutes. Clients actually read these now.&rdquo;
+                &ldquo;SearchProof cut our monthly report time from 3 hours to 20 minutes. Clients actually read these now.&rdquo;
               </p>
               <div className="mt-4 flex items-center gap-3">
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-xs font-bold">
@@ -104,7 +104,7 @@ export default function LoginPage() {
           {isDemo && (
             <div className="mb-6 rounded-[9px] border border-sky-200/70 bg-sky-50 px-3.5 py-3 text-xs text-sky-800">
               <span className="font-semibold">Demo credentials pre-filled:</span>{" "}
-              <span className="font-mono">demo@proofreport.app</span> / demo12345
+              <span className="font-mono">demo@getsearchproof.com</span> / demo12345
             </div>
           )}
 

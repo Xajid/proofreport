@@ -1,6 +1,6 @@
-# ProofReport — Agency Client Reporting MVP
+# SearchProof — Agency Client Reporting MVP
 
-White-label monthly SEO client reports for freelancers and small agencies.
+White-label monthly SEO & AEO client reports for agencies and consultants.
 
 **Core wedge:** Work log + GA4/GSC metrics → AI (or template) executive narrative → editable next actions → branded PDF.
 
@@ -16,7 +16,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Demo login
 
-- Email: `demo@proofreport.app`
+- Email: `demo@getsearchproof.com`
 - Password: `demo12345`
 - Agency: Northline SEO
 - Client: Bright Plumbing Co.

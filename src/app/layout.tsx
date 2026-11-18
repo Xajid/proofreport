@@ -21,9 +21,9 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ProofReport — Enterprise client reporting for SEO agencies",
+  title: "SearchProof — Enterprise client reporting for SEO & AEO agencies",
   description:
-    "White-label monthly SEO reports with work-log proof, GA4 + GSC metrics, AI narrative, and branded PDFs.",
+    "White-label monthly SEO & Answer Engine reports with work-log proof, GA4 + GSC metrics, AI narrative, and branded PDFs.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

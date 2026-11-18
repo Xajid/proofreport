@@ -7,8 +7,8 @@ interface BrandIconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 /**
- * BrandIcon: The standalone ProofReport mark.
- * Stylized geometric 'P' combining an upward proof/verification checkmark with layered report sheets.
+ * BrandIcon: The standalone SearchProof mark.
+ * Stylized geometric mark combining an upward proof/verification checkmark with layered search data sheets.
  */
 export function BrandIcon({ size = 32, className = "", ...props }: BrandIconProps) {
   const numSize = typeof size === "number" ? size : 32;
@@ -136,7 +136,7 @@ export function BrandLogo({
       <BrandIcon size={iconSizes[size]} className="shrink-0 transition-transform duration-200 group-hover:scale-105" />
       <div className="flex items-center gap-1.5">
         <span className={`font-display font-bold tracking-tight leading-none ${textSizes[size]} ${primaryTextColor}`}>
-          Proof<span className={`font-semibold ${secondaryTextColor}`}>Report</span>
+          Search<span className={`font-semibold ${secondaryTextColor}`}>Proof</span>
         </span>
         {showBadge && (
           <span className="rounded-full bg-teal-500/10 px-2 py-0.5 text-[10px] font-semibold text-teal-600 border border-teal-500/20">

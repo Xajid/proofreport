@@ -2,18 +2,18 @@
 set -e
 
 echo "=========================================="
-echo "  ProofReport -> Cloud Run & Firebase Deploy"
+echo "  SearchProof -> Cloud Run & Firebase Deploy"
 echo "=========================================="
 
 # Check for PROJECT_ID argument or prompt
 PROJECT_ID="${1:-$GOOGLE_CLOUD_PROJECT}"
 REGION="${2:-us-central1}"
-SERVICE_NAME="proofreport"
+SERVICE_NAME="searchproof"
 
 if [ -z "$PROJECT_ID" ]; then
   echo ""
   echo "Usage: ./scripts/deploy-gcp.sh <PROJECT_ID> [REGION]"
-  echo "Example: ./scripts/deploy-gcp.sh my-proofreport-app us-central1"
+  echo "Example: ./scripts/deploy-gcp.sh my-searchproof-app us-central1"
   echo ""
   read -p "Enter your Google Cloud / Firebase Project ID: " PROJECT_ID
 fi

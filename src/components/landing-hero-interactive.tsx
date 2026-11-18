@@ -158,7 +158,7 @@ export function LandingHeroInteractive() {
           ref={subheadRef}
           className="mt-6 max-w-lg text-[16px] leading-relaxed text-slate-600 sm:text-[17px]"
         >
-          ProofReport ties what you actually shipped this month directly to GA4 and Search Console gains.
+          SearchProof ties what you actually shipped this month directly to GA4 and Search Console gains.
           AI writes the executive narrative; you export a beautiful, white-labeled PDF in seconds.
         </p>
 

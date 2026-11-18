@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/card";
-import { Paintbrush, Calendar, Key, Zap, CreditCard } from "lucide-react";
+import { Paintbrush, Calendar, Key, Zap, CreditCard, Mail } from "lucide-react";
 
 type IntegrationStatus = {
   openai: boolean;
   google: boolean;
   stripe: boolean;
+  resend: boolean;
 };
 
 const INTEGRATIONS: {
@@ -41,11 +42,19 @@ const INTEGRATIONS: {
   },
   {
     id: "stripe",
-    label: "Stripe checkout",
-    key: "STRIPE_SECRET_KEY",
-    description: "Live billing and subscription management",
+    label: "Dodo Payments checkout",
+    key: "DODO_PAYMENTS_API_KEY",
+    description: "Global cards, Apple Pay, and subscription billing",
     icon: CreditCard,
     color: "text-emerald-600 bg-emerald-50 border-emerald-100",
+  },
+  {
+    id: "resend",
+    label: "Resend email delivery",
+    key: "RESEND_API_KEY",
+    description: "Automated monthly report PDF delivery & password resets",
+    icon: Mail,
+    color: "text-rose-600 bg-rose-50 border-rose-100",
   },
 ];
 
@@ -63,6 +72,7 @@ export function SettingsForm() {
     openai: false,
     google: false,
     stripe: false,
+    resend: false,
   });
   const [logoError, setLogoError] = useState(false);
   const [msg, setMsg] = useState("");

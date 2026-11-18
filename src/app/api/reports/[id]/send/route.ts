@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { pdfRenderer } from "@/providers/pdf/renderer";
 import { apiErrorMessage, periodLabel } from "@/lib/utils";
 import { getLimits } from "@/lib/plan";
+import { renderReportEmailHtml } from "@/lib/email-templates";
 import type { MetricsSnapshot } from "@/types/metrics";
 
 const sendSchema = z.object({
@@ -101,10 +102,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: process.env.EMAIL_FROM || "ProofReport <reports@proofreport.app>",
+          from: process.env.EMAIL_FROM || "SearchProof <info@getsearchproof.com>",
           to: [recipient],
-          subject: `${report.client.name} — Monthly SEO Report (${period})`,
-          html: `<p>Hi,</p><p>Your monthly SEO report for <strong>${report.client.name}</strong> (${period}) from <strong>${report.client.org.name}</strong> is ready.</p>${parsed.note ? `<p>${parsed.note}</p>` : ""}<p><a href="${shareUrl}">View online report</a> (PDF attached).</p>`,
+          subject: `${report.client.name} — Monthly SEO Performance Report (${period})`,
+          html: renderReportEmailHtml({
+            agencyName: report.client.org.name,
+            agencyLogo: report.client.org.logoUrl,
+            primaryColor: report.client.org.primaryColor,
+            clientName: report.client.name,
+            period,
+            note: parsed.note,
+            shareUrl,
+          }),
           attachments: [
             {
               filename: `report-${report.client.domain}.pdf`,

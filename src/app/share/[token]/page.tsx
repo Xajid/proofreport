@@ -52,7 +52,7 @@ export default async function PublicShareReportPage({
     <div className="min-h-screen surface-mesh">
       {shouldWatermark && (
         <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 text-center text-xs font-semibold text-amber-800 tracking-wide uppercase">
-          Sample Preview · Generated with ProofReport
+          Sample Preview · Generated with SearchProof
         </div>
       )}
       {/* Branded top banner */}
@@ -185,7 +185,7 @@ export default async function PublicShareReportPage({
         )}
 
         <footer className="pt-4 text-center text-xs text-slate-400">
-          Prepared by {report.client.org.name} · Powered by ProofReport
+          Prepared by {report.client.org.name} · Powered by SearchProof
         </footer>
       </main>
     </div>

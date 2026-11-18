@@ -15,7 +15,7 @@ const WHY_CARDS = [
   {
     icon: Shield,
     title: "100% White-label",
-    body: "Your agency name, logo, brand accent colors, and custom domains. Your clients will never see ProofReport anywhere.",
+    body: "Your agency name, logo, brand accent colors, and custom domains. Your clients will never see SearchProof anywhere.",
   },
   {
     icon: BarChart3,
@@ -64,17 +64,17 @@ export default function LandingPage() {
       {/* ── Interactive 4-Step Agency Workflow ── */}
       <HowItWorksInteractive />
 
-      {/* ── Why Agencies Choose ProofReport ── */}
+      {/* ── Why Agencies Choose SearchProof ── */}
       <section className="mx-auto max-w-6xl px-6 py-24">
         <div className="mb-14 text-center max-w-2xl mx-auto">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
             Built strictly for SEO operators
           </p>
           <h2 className="font-display mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
-            Why agencies switch to ProofReport
+            Why agencies switch to SearchProof
           </h2>
           <p className="mt-3 text-slate-500 text-[15px]">
-            Traditional dashboard tools dump raw numbers that confuse clients. ProofReport builds the bridge between what you did and why their traffic moved.
+            Traditional dashboard tools dump raw numbers that confuse clients. SearchProof builds the bridge between what you did and why their traffic moved.
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">

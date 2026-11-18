@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "proofreport",
+    "site": "searchproof",
     "public": "public",
     "ignore": [
       "firebase.json",

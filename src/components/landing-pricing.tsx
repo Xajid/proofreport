@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 const FAQS = [
   {
-    q: "Do my clients see ProofReport branding anywhere?",
+    q: "Do my clients see SearchProof branding anywhere?",
     a: "Never. Reports display your agency name, logo, primary brand color, and contact info. Public share links and PDFs are 100% white-labeled.",
   },
   {
@@ -16,7 +16,7 @@ const FAQS = [
   },
   {
     q: "How does the Google Analytics 4 & Search Console connection work?",
-    a: "You authenticate once with Google OAuth from your client settings. ProofReport securely pulls verified organic clicks, impressions, sessions, and conversions automatically.",
+    a: "You authenticate once with Google OAuth from your client settings. SearchProof securely pulls verified organic clicks, impressions, sessions, and conversions automatically.",
   },
   {
     q: "Can I edit the AI executive narrative before sending?",
@@ -35,7 +35,7 @@ export function LandingPricing() {
       badgeTone: "bg-slate-100 text-slate-700 border-slate-200",
       price: "$0",
       suffix: "/14 days",
-      subtext: "Perfect for testing ProofReport on your first client.",
+      subtext: "Perfect for testing SearchProof on your first client.",
       featured: false,
       ctaText: "Start free trial",
       ctaLink: "/register",
@@ -232,7 +232,7 @@ export function LandingPricing() {
               Frequently asked questions
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Everything you need to know about ProofReport for agencies.
+              Everything you need to know about SearchProof for agencies.
             </p>
           </div>
 

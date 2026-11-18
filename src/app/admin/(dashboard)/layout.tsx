@@ -33,7 +33,7 @@ export default async function AdminDashboardLayout({
             </div>
             <div>
               <span className="font-display text-sm font-semibold text-white tracking-tight">
-                ProofReport Platform Admin
+                SearchProof Platform Admin
               </span>
               <span className="ml-2.5 rounded-full bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
                 Super-Admin

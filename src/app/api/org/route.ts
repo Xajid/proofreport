@@ -14,7 +14,8 @@ export async function GET() {
     integrationStatus: {
       openai: Boolean(process.env.OPENAI_API_KEY),
       google: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-      stripe: Boolean(process.env.STRIPE_SECRET_KEY),
+      stripe: Boolean(process.env.DODO_PAYMENTS_API_KEY || process.env.PADDLE_API_KEY || process.env.STRIPE_SECRET_KEY),
+      resend: Boolean(process.env.RESEND_API_KEY),
     },
   });
 }

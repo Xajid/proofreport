@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState(isDemo ? "demo@proofreport.app" : "");
+  const [email, setEmail] = useState(isDemo ? "demo@getsearchproof.com" : "");
   const [password, setPassword] = useState(isDemo ? "demo12345" : "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -106,7 +106,7 @@ export default function AdminLoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@proofreport.app"
+                placeholder="admin@getsearchproof.com"
                 required
                 className="h-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 text-sm"
               />
@@ -159,7 +159,7 @@ export default function AdminLoginPage() {
           {isDemo && (
             <div className="mt-5 pt-4 border-t border-white/5 text-center">
               <p className="text-[11px] text-slate-500">
-                Demo admin credentials pre-filled: <span className="text-amber-400/90 font-mono">demo@proofreport.app</span>
+                Demo admin credentials pre-filled: <span className="text-amber-400/90 font-mono">demo@getsearchproof.com</span>
               </p>
             </div>
           )}
@@ -175,7 +175,7 @@ export default function AdminLoginPage() {
           </p>
           <p>
             <Link href="/" className="text-slate-500 hover:text-slate-300">
-              ← Return to ProofReport homepage
+              ← Return to SearchProof homepage
             </Link>
           </p>
         </div>

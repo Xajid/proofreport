@@ -34,7 +34,7 @@ const STEPS = [
     num: "02",
     title: "Connect Google",
     short: "GA4 & Search Console sync",
-    desc: "One-click OAuth links Google Analytics 4 and Google Search Console. ProofReport fetches verified clicks, impressions, sessions, and conversions.",
+    desc: "One-click OAuth links Google Analytics 4 and Google Search Console. SearchProof fetches verified clicks, impressions, sessions, and conversions.",
     icon: Link2,
     badge: "Official OAuth",
     preview: {
@@ -107,7 +107,7 @@ export function HowItWorksInteractive() {
         {/* Section Header */}
         <div className="mb-14 max-w-xl">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
-            How agencies work in ProofReport
+            How agencies work in SearchProof
           </p>
           <h2 className="font-display mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
             From raw work logs to client PDF in four steps.
