@@ -16,7 +16,7 @@ const STEPS = [
     num: "01",
     title: "Add your client",
     short: "Domain & contact setup",
-    desc: "Set the client's name, primary domain, and contact email. Toggle AI Engine citations (ChatGPT, Perplexity, Gemini) with one click.",
+    desc: "Set the client's name, domain, and the email that should receive the PDF.",
     icon: UserPlus,
     badge: "15 seconds",
     preview: {
@@ -26,7 +26,7 @@ const STEPS = [
         { label: "Client Name", val: "Bright Plumbing Co." },
         { label: "Target Domain", val: "brightplumbing.example" },
         { label: "Recipient", val: "owner@brightplumbing.example" },
-        { label: "AI Mentions", val: "Enabled (ChatGPT, Perplexity)" },
+        { label: "Trial", val: "14 days, one client, watermark on the PDF" },
       ],
     },
   },
@@ -34,17 +34,17 @@ const STEPS = [
     num: "02",
     title: "Connect Google",
     short: "GA4 & Search Console sync",
-    desc: "One-click OAuth links Google Analytics 4 and Google Search Console. SearchProof fetches verified clicks, impressions, sessions, and conversions.",
+    desc: "OAuth connects GA4 and Search Console. You choose the property. A failed pull stops the report instead of filling demo numbers.",
     icon: Link2,
     badge: "Official OAuth",
     preview: {
       title: "Data Connections",
-      subtitle: "Live Google API token active",
+      subtitle: "Pick the property Google returns",
       items: [
-        { label: "GA4 Property", val: "Bright Plumbing (ID: 389210291) · Connected" },
-        { label: "Search Console", val: "sc-domain:brightplumbing.example · Verified" },
-        { label: "Token Refresh", val: "Automatic background sync" },
-        { label: "Data Integrity", val: "100% verified source metrics" },
+        { label: "GA4 Property", val: "Choose from the account list after OAuth" },
+        { label: "Search Console", val: "Choose the site that matches the domain" },
+        { label: "Failed pull", val: "Report stays a draft and names the source" },
+        { label: "Demo connect", val: "Labeled demo snapshot, never live" },
       ],
     },
   },
@@ -69,17 +69,17 @@ const STEPS = [
     num: "04",
     title: "Generate, review & send",
     short: "Executive PDF to client inbox",
-    desc: "AI produces an executive narrative explaining metric deltas through the lens of your work. Review in split-screen, then send with attached PDF.",
+    desc: "The draft lists shipped work, what moved, and a correlation note. Edit the three next actions, mark ready, then email the PDF.",
     icon: Send,
     badge: "Client-ready",
     preview: {
       title: "Client Delivery",
       subtitle: "PDF generated & delivered",
       items: [
-        { label: "Executive Story", val: "Organic sessions +14.2% tied to content updates" },
-        { label: "Report Format", val: "Branded PDF + white-label /share link" },
-        { label: "Delivery", val: "Delivered via Resend to client inbox" },
-        { label: "Client Reaction", val: "\"Best agency report we have ever received.\"" },
+        { label: "Narrative", val: "Shipped, moved, and a correlation label" },
+        { label: "Report format", val: "Branded PDF plus a share link" },
+        { label: "Send", val: "Only after you mark the draft ready" },
+        { label: "Trial", val: "Watermark stays until you upgrade" },
       ],
     },
   },
@@ -90,13 +90,13 @@ export function HowItWorksInteractive() {
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (previewRef.current) {
-      gsap.fromTo(
-        previewRef.current,
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }
-      );
-    }
+    if (!previewRef.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    gsap.fromTo(
+      previewRef.current,
+      { y: 8 },
+      { y: 0, duration: 0.35, ease: "power2.out" }
+    );
   }, [activeStep]);
 
   const current = STEPS[activeStep];

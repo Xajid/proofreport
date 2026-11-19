@@ -51,7 +51,7 @@ export default function RootError({
       </div>
 
       <p className="mt-8 text-xs text-slate-400">
-        SearchProof · Enterprise Client Reporting
+        SearchProof · Monthly SEO reports for freelancers
       </p>
     </div>
   );

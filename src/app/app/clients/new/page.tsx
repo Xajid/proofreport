@@ -12,7 +12,7 @@ export default async function NewClientPage() {
   const orgId = session.user.orgId;
   const org = await prisma.organization.findUnique({ where: { id: orgId } });
   const clientCount = await prisma.client.count({ where: { orgId } });
-  const limits = getLimits(org?.plan ?? "trial");
+  const limits = getLimits(org?.plan, org);
 
   if (clientCount >= limits.maxClients) {
     redirect("/app/clients");

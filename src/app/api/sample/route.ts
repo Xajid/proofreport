@@ -21,12 +21,16 @@ export async function GET() {
   const agencyName = demoClient?.org.name || "Northline SEO";
   const primaryColor = demoClient?.org.primaryColor || "#0F766E";
 
-  const metrics = await metricsProvider.fetch({
+  const fetched = await metricsProvider.fetch({
     clientDomain: domain,
     periodStart,
     periodEnd,
     preferredProvider: "mock",
   });
+  if (!fetched.ok) {
+    return NextResponse.json({ error: fetched.error }, { status: 500 });
+  }
+  const metrics = fetched.metrics;
 
   const workLogs = (demoClient?.workLogs || []).map((w) => ({
     title: w.title,
@@ -69,13 +73,8 @@ export async function GET() {
     metrics,
     workLogs,
     watermark: true,
-    includeAiMentions: true,
-    aiMentions: (demoClient?.aiMentions || []).map((a) => ({
-      engine: a.engine,
-      prompt: a.prompt,
-      mentioned: a.mentioned,
-      citations: a.citationsJson ? (JSON.parse(a.citationsJson) as string[]) : [],
-    })),
+    includeAiMentions: false,
+    aiMentions: [],
   });
 
   return new NextResponse(new Uint8Array(buffer), {

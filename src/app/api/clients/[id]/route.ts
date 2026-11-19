@@ -24,7 +24,20 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const { id } = await params;
   const client = await assertClient(session.user.orgId, id);
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(client);
+  return NextResponse.json({
+    ...client,
+    connections: client.connections.map((row) => ({
+      id: row.id,
+      clientId: row.clientId,
+      type: row.type,
+      provider: row.provider,
+      externalId: row.externalId,
+      displayName: row.displayName,
+      metaJson: row.metaJson,
+      connectedAt: row.connectedAt,
+      updatedAt: row.updatedAt,
+    })),
+  });
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {

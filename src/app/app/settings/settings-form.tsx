@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/card";
 import { Paintbrush, Calendar, Key, Zap, CreditCard, Mail } from "lucide-react";
 
 type IntegrationStatus = {
+  nvidia: boolean;
   openai: boolean;
   google: boolean;
-  stripe: boolean;
+  dodo: boolean;
   resend: boolean;
 };
 
@@ -25,10 +26,18 @@ const INTEGRATIONS: {
   color: string;
 }[] = [
   {
+    id: "nvidia",
+    label: "NVIDIA Nemotron",
+    key: "NVIDIA_API_KEY",
+    description: "Default model for narratives and mention checks. Used first so OpenAI tokens are not spent.",
+    icon: Zap,
+    color: "text-lime-700 bg-lime-50 border-lime-100",
+  },
+  {
     id: "openai",
     label: "OpenAI narrative",
     key: "OPENAI_API_KEY",
-    description: "AI-generated executive summaries",
+    description: "Used only when NVIDIA_API_KEY is unset, or when AI_PROVIDER=openai",
     icon: Zap,
     color: "text-violet-600 bg-violet-50 border-violet-100",
   },
@@ -41,7 +50,7 @@ const INTEGRATIONS: {
     color: "text-sky-600 bg-sky-50 border-sky-100",
   },
   {
-    id: "stripe",
+    id: "dodo",
     label: "Dodo Payments checkout",
     key: "DODO_PAYMENTS_API_KEY",
     description: "Global cards, Apple Pay, and subscription billing",
@@ -52,7 +61,7 @@ const INTEGRATIONS: {
     id: "resend",
     label: "Resend email delivery",
     key: "RESEND_API_KEY",
-    description: "Automated monthly report PDF delivery & password resets",
+    description: "Sends the PDF when you click send, and password reset mail",
     icon: Mail,
     color: "text-rose-600 bg-rose-50 border-rose-100",
   },
@@ -69,9 +78,10 @@ export function SettingsForm() {
   });
   const [plan, setPlan] = useState("trial");
   const [status, setStatus] = useState<IntegrationStatus>({
+    nvidia: false,
     openai: false,
     google: false,
-    stripe: false,
+    dodo: false,
     resend: false,
   });
   const [logoError, setLogoError] = useState(false);

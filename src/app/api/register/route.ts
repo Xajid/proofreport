@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
+import { addDays } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validators";
 import { apiErrorMessage } from "@/lib/utils";
@@ -28,6 +29,9 @@ export async function POST(req: Request) {
               create: {
                 name: data.agencyName,
                 primaryColor: "#0F766E",
+                plan: "trial",
+                clientSlots: 1,
+                trialEndsAt: addDays(new Date(), 14),
               },
             },
           },

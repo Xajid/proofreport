@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getLimits } from "@/lib/plan";
 import { ClientDetail } from "./client-detail";
 
 export default async function ClientPage({ params }: { params: Promise<{ id: string }> }) {
@@ -25,16 +26,27 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
 
   const org = await prisma.organization.findUnique({
     where: { id: session!.user.orgId! },
-    select: { plan: true },
+    select: { plan: true, clientSlots: true, trialEndsAt: true, createdAt: true },
   });
+  const limits = getLimits(org?.plan, org);
 
   return (
     <Suspense fallback={<p className="text-sm text-slate-500">Loading client…</p>}>
       <ClientDetail
         googleConfigured={googleConfigured}
         plan={org?.plan ?? "trial"}
+        clientSlots={limits.maxClients}
+        trialExpired={limits.expired}
         client={{
           ...client,
+          connections: client.connections.map((c) => ({
+            id: c.id,
+            type: c.type,
+            provider: c.provider,
+            displayName: c.displayName,
+            externalId: c.externalId,
+            metaJson: c.metaJson,
+          })),
           workLogs: client.workLogs.map((w) => ({
             id: w.id,
             title: w.title,
@@ -56,6 +68,8 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
             engine: a.engine,
             mentioned: a.mentioned,
             prompt: a.prompt,
+            source: a.source,
+            citations: a.citationsJson ? (JSON.parse(a.citationsJson) as string[]) : [],
             checkedAt: a.checkedAt.toISOString(),
           })),
         }}

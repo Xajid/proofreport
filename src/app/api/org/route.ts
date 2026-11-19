@@ -12,9 +12,10 @@ export async function GET() {
   return NextResponse.json({
     ...org,
     integrationStatus: {
+      nvidia: Boolean(process.env.NVIDIA_API_KEY),
       openai: Boolean(process.env.OPENAI_API_KEY),
       google: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-      stripe: Boolean(process.env.DODO_PAYMENTS_API_KEY || process.env.PADDLE_API_KEY || process.env.STRIPE_SECRET_KEY),
+      dodo: Boolean(process.env.DODO_PAYMENTS_API_KEY),
       resend: Boolean(process.env.RESEND_API_KEY),
     },
   });

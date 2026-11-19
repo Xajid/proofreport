@@ -4,6 +4,10 @@ export type MetricsSnapshot = {
   periodEnd: string;
   previousPeriodStart: string;
   previousPeriodEnd: string;
+  sources?: {
+    ga4: boolean;
+    gsc: boolean;
+  };
   organic: {
     sessions: number;
     sessionsDeltaPct: number;
@@ -12,6 +16,7 @@ export type MetricsSnapshot = {
     pageviews: number;
     pageviewsDeltaPct: number;
   };
+  topLandingPages?: { path: string; sessions: number }[];
   search: {
     clicks: number;
     clicksDeltaPct: number;
@@ -37,11 +42,11 @@ export type NarrativeInput = {
   agencyName: string;
   periodLabel: string;
   metrics: MetricsSnapshot;
-  workLogs: { title: string; body: string; category: string }[];
+  workLogs: { title: string; body: string; category: string; hours?: number | null }[];
 };
 
 export type NarrativeResult = {
   narrative: string;
   nextActions: [string, string, string];
-  source: "openai" | "template";
+  source: "openai" | "nvidia" | "template";
 };

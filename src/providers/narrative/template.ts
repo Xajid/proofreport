@@ -1,36 +1,62 @@
 import type { NarrativeInput, NarrativeResult } from "@/types/metrics";
 import { formatNumber, formatPct } from "@/lib/utils";
 
+const NOT_CLAIMING =
+  "What we are not claiming\nThese figures sit next to the work logged above. The relationship is correlation. This report does not claim the work produced the movement.";
+
 export function generateTemplateNarrative(input: NarrativeInput): NarrativeResult {
   const { metrics, workLogs, clientName, periodLabel } = input;
-  const workBits = workLogs
-    .slice(0, 5)
-    .map((w) => w.title)
-    .join("; ");
+  const topQuery = metrics.search.topQueries[0]?.query;
+  const topPage = metrics.topLandingPages?.[0]?.path;
 
-  const sessionDir = metrics.organic.sessionsDeltaPct >= 0 ? "grew" : "softened";
-  const clickDir = metrics.search.clicksDeltaPct >= 0 ? "increased" : "declined";
-  const convDir = metrics.conversions.totalDeltaPct >= 0 ? "up" : "down";
+  const shipped = workLogs.length
+    ? workLogs
+        .slice(0, 8)
+        .map((w) => {
+          const hours = w.hours ? `, ${w.hours}h` : "";
+          const detail = w.body?.trim() ? `: ${w.body.trim()}` : "";
+          return `• ${w.title} (${w.category}${hours})${detail}`;
+        })
+        .join("\n")
+    : "• No work-log entries were recorded for this period.";
+
+  const positionNote =
+    metrics.search.avgPosition > 0
+      ? `Average position is ${metrics.search.avgPosition} (${metrics.search.avgPositionDelta >= 0 ? "+" : ""}${metrics.search.avgPositionDelta} versus the previous period; a lower number is a better ranking).`
+      : "Search Console position was not connected for this period.";
+
+  const moved = [
+    `Organic sessions: ${formatNumber(metrics.organic.sessions)} (${formatPct(metrics.organic.sessionsDeltaPct)} versus the previous period of the same length).`,
+    `Search clicks: ${formatNumber(metrics.search.clicks)} (${formatPct(metrics.search.clicksDeltaPct)}). Impressions: ${formatNumber(metrics.search.impressions)} (${formatPct(metrics.search.impressionsDeltaPct)}).`,
+    positionNote,
+    `Conversions: ${formatNumber(metrics.conversions.total)} (${formatPct(metrics.conversions.totalDeltaPct)}) at a ${metrics.conversions.rate}% conversion rate.`,
+    topPage ? `Top landing page by organic sessions: ${topPage}.` : "",
+    topQuery ? `Query with the most clicks: ${topQuery}.` : "",
+  ]
+    .filter(Boolean)
+    .map((line) => `• ${line}`)
+    .join("\n");
 
   const narrative = [
-    `For ${clientName} (${periodLabel}), organic sessions ${sessionDir} ${formatPct(metrics.organic.sessionsDeltaPct)} to ${formatNumber(metrics.organic.sessions)}, while Search Console clicks ${clickDir} ${formatPct(metrics.search.clicksDeltaPct)} to ${formatNumber(metrics.search.clicks)}.`,
-    `Conversions finished ${convDir} ${formatPct(metrics.conversions.totalDeltaPct)} at ${formatNumber(metrics.conversions.total)} (${metrics.conversions.rate}% conversion rate). Average search position moved ${metrics.search.avgPositionDelta >= 0 ? "+" : ""}${metrics.search.avgPositionDelta} to ${metrics.search.avgPosition}.`,
-    workLogs.length
-      ? `Work logged this period included: ${workBits}. These activities are correlated with the metric movement above; we treat the link as directional rather than proven causation.`
-      : `No work-log entries were recorded for this period, so the narrative focuses on metric movement only.`,
-    `Impressions ${metrics.search.impressionsDeltaPct >= 0 ? "expanded" : "contracted"} ${formatPct(metrics.search.impressionsDeltaPct)}, suggesting ${metrics.search.impressionsDeltaPct >= 0 ? "broader query coverage" : "tighter visibility"} heading into next month.`,
-  ].join(" ");
+    `Proof of work for ${clientName} (${periodLabel}).`,
+    `What we shipped\n${shipped}`,
+    `What moved\n${moved}`,
+    NOT_CLAIMING,
+  ].join("\n\n");
+
+  const queryLabel = topQuery ? `"${topQuery}"` : "the query with the most clicks";
+  const pageLabel = topPage ? topPage : "the top landing page";
 
   const nextActions: [string, string, string] = [
     metrics.search.avgPosition > 10
-      ? "Prioritize on-page refreshes for queries ranking positions 8–15 to capture quick click gains."
-      : "Expand supporting content around top converting queries to defend and widen rankings.",
-    metrics.conversions.totalDeltaPct < 5
-      ? "Tighten CTA and form UX on top landing pages driving organic sessions."
-      : "Scale the conversion paths that outperformed — replicate layout/CTA patterns on adjacent pages.",
+      ? `Refresh the page that ranks for ${queryLabel} while it sits outside the top 10.`
+      : `Add a supporting section around ${queryLabel} and record it in next month's work log.`,
+    metrics.conversions.totalDeltaPct < 0
+      ? `Review ${pageLabel} and note whether the primary call to action is still the one clients use.`
+      : `Keep the conversion path on ${pageLabel} and log any change you make to it.`,
     workLogs.some((w) => w.category === "technical")
-      ? "Ship remaining technical fixes and re-validate Core Web Vitals on key templates."
-      : "Run a technical crawl pass on indexation, redirects, and internal linking for priority sections.",
+      ? "Finish the technical items still open in the work log, then recheck the same templates next month."
+      : "Log a technical pass for indexation and internal links before the next report.",
   ];
 
   return { narrative, nextActions, source: "template" };

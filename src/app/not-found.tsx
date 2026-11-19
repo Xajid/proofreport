@@ -39,7 +39,7 @@ export default function RootNotFound() {
       </div>
 
       <p className="mt-8 text-xs text-slate-400">
-        SearchProof · Enterprise Client Reporting for SEO & AEO Agencies
+        SearchProof · Monthly SEO reports for freelancers
       </p>
     </div>
   );

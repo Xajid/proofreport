@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { aiMentionSchema } from "@/lib/validators";
 import { apiErrorMessage } from "@/lib/utils";
 import { getLimits } from "@/lib/plan";
+import { completeChat, extractJsonObject, resolveChatProvider, urlsInText } from "@/lib/llm";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
         prompt: data.prompt,
         mentioned: data.mentioned,
         citationsJson: JSON.stringify(data.citations),
+        source: "mock",
       },
     });
     return NextResponse.json(row);
@@ -64,23 +66,16 @@ export async function POST(req: Request) {
   }
 }
 
-/** Demo helper: append mock AEO checks for a client (preserving historical snapshots) */
+/** Ask the configured model and store the prompt, model, time, and URLs from its answer. */
 export async function PUT(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const org = await prisma.organization.findUnique({
-    where: { id: session.user.orgId },
-    select: { plan: true },
-  });
-  if (!getLimits(org?.plan).aiMentions) {
+  const chatConfig = resolveChatProvider();
+  if (!chatConfig) {
     return NextResponse.json(
-      {
-        error: "AI Mentions (AEO visibility) requires an upgraded plan.",
-        code: "PLAN_LIMIT",
-        plan: org?.plan,
-      },
-      { status: 403 }
+      { error: "Set NVIDIA_API_KEY to run checks on Nemotron, or OPENAI_API_KEY for OpenAI." },
+      { status: 400 }
     );
   }
 
@@ -93,43 +88,40 @@ export async function PUT(req: Request) {
   });
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const brand = client.name;
-  const promptTrimmed = customPrompt?.trim();
-  const engines = [
-    {
-      engine: "chatgpt",
-      prompt: promptTrimmed || `Who are the best providers for ${client.domain} services?`,
-      mentioned: true,
-      citations: [`https://${client.domain}`, "https://example-review.com"],
-    },
-    {
-      engine: "perplexity",
-      prompt: promptTrimmed || `Recommend top local options related to ${brand}`,
-      mentioned: true,
-      citations: [`https://${client.domain}/about`],
-    },
-    {
-      engine: "gemini",
-      prompt: promptTrimmed || `List reputable companies like ${brand}`,
-      mentioned: false,
-      citations: [] as string[],
-    },
-    {
-      engine: "claude",
-      prompt: promptTrimmed || `Where should I hire for services similar to ${brand}?`,
-      mentioned: Math.random() > 0.4,
-      citations: Math.random() > 0.4 ? [`https://${client.domain}`] : [],
-    },
-  ];
+  const prompt =
+    customPrompt?.trim() ||
+    `Who are the best providers for services like those on ${client.domain}? Mention specific companies and link to sources when you have them.`;
 
-  await prisma.aiMention.createMany({
-    data: engines.map((e) => ({
+  const chat = await completeChat({
+    system:
+      "Answer the buyer question in plain sentences. Then return JSON only with keys answer, mentioned, and citations. mentioned is true only if your answer names the brand or domain. citations must be URLs that appear in your answer. Do not invent URLs.",
+    user: `Brand: ${client.name}\nDomain: ${client.domain}\nBuyer question: ${prompt}`,
+    temperature: 0.2,
+    maxTokens: 700,
+  });
+  if (!chat) {
+    return NextResponse.json(
+      { error: `${chatConfig.model} did not return an answer. Nothing was saved.` },
+      { status: 502 }
+    );
+  }
+
+  const parsed = extractJsonObject(chat.content) as { answer?: string } | null;
+  const answer = (parsed?.answer || chat.content).trim();
+  const answerLower = answer.toLowerCase();
+  const mentioned =
+    answerLower.includes(client.name.toLowerCase()) || answerLower.includes(client.domain.toLowerCase());
+  const citations = urlsInText(answer);
+
+  await prisma.aiMention.create({
+    data: {
       clientId,
-      engine: e.engine,
-      prompt: e.prompt,
-      mentioned: e.mentioned,
-      citationsJson: JSON.stringify(e.citations),
-    })),
+      engine: chat.model,
+      prompt,
+      mentioned,
+      citationsJson: JSON.stringify(citations),
+      source: "live",
+    },
   });
 
   const rows = await prisma.aiMention.findMany({

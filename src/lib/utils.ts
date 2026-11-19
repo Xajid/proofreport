@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ZodError } from "zod";
+import { differenceInCalendarDays, subDays } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -32,6 +33,14 @@ export function formatNumber(n: number): string {
 export function formatPct(n: number): string {
   const sign = n > 0 ? "+" : "";
   return `${sign}${n.toFixed(1)}%`;
+}
+
+/** Previous window of the same length, ending the day before `start`. */
+export function previousPeriod(start: Date, end: Date): { prevStart: Date; prevEnd: Date } {
+  const days = Math.max(1, differenceInCalendarDays(end, start) + 1);
+  const prevEnd = subDays(start, 1);
+  const prevStart = subDays(prevEnd, days - 1);
+  return { prevStart, prevEnd };
 }
 
 export function periodLabel(start: Date | string, end: Date | string): string {

@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
 import { startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { prisma } from "@/lib/prisma";
-import { metricsProvider } from "@/providers/metrics";
+import { applyRefreshedTokens, googleSources, metricsProvider } from "@/providers/metrics";
 import { narrativeProvider } from "@/providers/narrative";
 import { periodLabel } from "@/lib/utils";
 import { getLimits } from "@/lib/plan";
 
-export async function POST(req: Request) {
+async function run(req: Request) {
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = req.headers.get("authorization");
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -32,13 +31,11 @@ export async function POST(req: Request) {
 
   let created = 0;
   let skipped = 0;
+  let failed = 0;
 
   for (const org of orgs) {
-    const limits = getLimits(org.plan);
-    if (!force && !limits.cronScheduled) {
-      // Automatic monthly background cron is an Agency feature
-      continue;
-    }
+    const limits = getLimits(org.plan, org);
+    if (!limits.cronScheduled || limits.expired) continue;
 
     for (const client of org.clients) {
       const existing = await prisma.reportRun.findFirst({
@@ -53,21 +50,22 @@ export async function POST(req: Request) {
         continue;
       }
 
-      const ga4 = client.connections.find((c) => c.type === "ga4");
-      const gsc = client.connections.find((c) => c.type === "gsc");
-      const preferred =
-        ga4?.provider === "google" || gsc?.provider === "google" ? "google" : "mock";
-
-      const metrics = await metricsProvider.fetch({
+      const sources = googleSources(client.connections);
+      const fetched = await metricsProvider.fetch({
         clientDomain: client.domain,
         periodStart,
         periodEnd,
-        preferredProvider: preferred,
-        ga4PropertyId: ga4?.externalId,
-        gscSiteUrl: gsc?.externalId,
-        accessToken: ga4?.accessToken || gsc?.accessToken,
-        refreshToken: ga4?.refreshToken || gsc?.refreshToken,
+        preferredProvider: sources.preferredProvider,
+        ga4: sources.ga4,
+        gsc: sources.gsc,
       });
+
+      if (!fetched.ok) {
+        failed++;
+        continue;
+      }
+
+      await applyRefreshedTokens(fetched.refreshed);
 
       const periodLogs = client.workLogs.filter(
         (w) => w.periodStart <= periodEnd && w.periodEnd >= periodStart
@@ -77,11 +75,12 @@ export async function POST(req: Request) {
         clientName: client.name,
         agencyName: org.name,
         periodLabel: periodLabel(periodStart, periodEnd),
-        metrics,
+        metrics: fetched.metrics,
         workLogs: periodLogs.map((w) => ({
           title: w.title,
           body: w.body,
           category: w.category,
+          hours: w.hours,
         })),
       });
 
@@ -90,10 +89,11 @@ export async function POST(req: Request) {
           clientId: client.id,
           periodStart,
           periodEnd,
-          status: "ready",
+          status: "draft",
           watermark: limits.watermark,
-          metricsJson: JSON.stringify(metrics),
+          metricsJson: JSON.stringify(fetched.metrics),
           narrative: narrative.narrative,
+          narrativeSource: narrative.source,
           nextActionsJson: JSON.stringify(narrative.nextActions),
         },
       });
@@ -107,6 +107,14 @@ export async function POST(req: Request) {
     orgsMatched: orgs.length,
     created,
     skipped,
+    failed,
   });
 }
 
+export async function GET(req: Request) {
+  return run(req);
+}
+
+export async function POST(req: Request) {
+  return run(req);
+}

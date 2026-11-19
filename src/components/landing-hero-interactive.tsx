@@ -32,86 +32,21 @@ export function LandingHeroInteractive() {
   const [selectedTheme, setSelectedTheme] = useState(BRAND_THEMES[0]);
 
   // Animated counters
-  const [counterValues, setCounterValues] = useState({
-    sessions: 0,
-    clicks: 0,
-    conv: 0,
-  });
+  const counterValues = { sessions: 3842, clicks: 1904, conv: 47 };
 
   useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+
     const ctx = gsap.context(() => {
       // Hero Entrance Timeline
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-      tl.from(badgeRef.current, {
-        opacity: 0,
-        y: -12,
-        duration: 0.6,
-      })
-        .from(
-          headlineRef.current,
-          {
-            opacity: 0,
-            y: 24,
-            duration: 0.8,
-          },
-          "-=0.3"
-        )
-        .from(
-          subheadRef.current,
-          {
-            opacity: 0,
-            y: 16,
-            duration: 0.7,
-          },
-          "-=0.5"
-        )
-        .from(
-          ctaRef.current,
-          {
-            opacity: 0,
-            y: 12,
-            duration: 0.6,
-          },
-          "-=0.4"
-        )
-        .from(
-          trustRef.current,
-          {
-            opacity: 0,
-            duration: 0.5,
-          },
-          "-=0.3"
-        )
-        .from(
-          cardRef.current,
-          {
-            opacity: 0,
-            scale: 0.94,
-            y: 30,
-            duration: 0.9,
-            ease: "back.out(1.2)",
-          },
-          "-=0.7"
-        );
-
-      // Animate numbers up smoothly
-      const obj = { s: 0, cl: 0, co: 0 };
-      gsap.to(obj, {
-        s: 3842,
-        cl: 1904,
-        co: 47,
-        duration: 1.6,
-        delay: 0.5,
-        ease: "power2.out",
-        onUpdate: () => {
-          setCounterValues({
-            sessions: Math.round(obj.s),
-            clicks: Math.round(obj.cl),
-            conv: Math.round(obj.co),
-          });
-        },
-      });
+      tl.from(badgeRef.current, { y: -12, duration: 0.6 })
+        .from(headlineRef.current, { y: 24, duration: 0.8 }, "-=0.3")
+        .from(subheadRef.current, { y: 16, duration: 0.7 }, "-=0.5")
+        .from(ctaRef.current, { y: 12, duration: 0.6 }, "-=0.4")
+        .from(cardRef.current, { y: 20, duration: 0.8 }, "-=0.5");
     }, containerRef);
 
     return () => ctx.revert();
@@ -130,7 +65,7 @@ export function LandingHeroInteractive() {
           className="mb-5 inline-flex items-center gap-2 rounded-full border border-teal-200/60 bg-teal-50/80 px-3.5 py-1.5 text-xs font-semibold text-teal-800 backdrop-blur-sm shadow-[var(--shadow-xs)]"
         >
           <span className="status-dot status-dot-pulse bg-teal-500" />
-          The Anti-Dashboard for SEO Agencies
+          Monthly proof of work for SEO freelancers
         </div>
 
         {/* Headline */}
@@ -158,8 +93,8 @@ export function LandingHeroInteractive() {
           ref={subheadRef}
           className="mt-6 max-w-lg text-[16px] leading-relaxed text-slate-600 sm:text-[17px]"
         >
-          SearchProof ties what you actually shipped this month directly to GA4 and Search Console gains.
-          AI writes the executive narrative; you export a beautiful, white-labeled PDF in seconds.
+          Log what you shipped, pull GA4 and Search Console, and edit a narrative that labels correlation.
+          Then export a branded PDF. Nothing is emailed until you mark the draft ready.
         </p>
 
         {/* CTAs */}
@@ -179,7 +114,7 @@ export function LandingHeroInteractive() {
 
         {/* Trust line */}
         <p ref={trustRef} className="mt-5 text-xs font-medium text-slate-400">
-          No credit card required · Connects to GA4 & GSC · White-labeled to your agency
+          No card to start · GA4 and Search Console · Watermark until you upgrade
         </p>
       </div>
 
@@ -257,7 +192,7 @@ export function LandingHeroInteractive() {
             <div className="flex items-center justify-between text-xs text-slate-400 pb-4 border-b border-white/10">
               <span className="font-mono text-[11px] uppercase tracking-wider text-teal-400/90 flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                Live GA4 + Search Console
+                Sample figures
               </span>
               <span>October 2026 Reporting Run</span>
             </div>
@@ -268,14 +203,15 @@ export function LandingHeroInteractive() {
                 <div>
                   <div className="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 mb-2">
                     <Sparkles className="h-3 w-3" />
-                    AI Executive Narrative
+                    Narrative draft
                   </div>
                   <p className="font-display text-lg font-medium leading-snug text-white sm:text-xl">
-                    Sessions grew +14.2% to 3,842, while Search Console clicks expanded +9.8% to 1,904.
+                    Sessions were 3,842 (+14.2%). Search clicks were 1,904 (+9.8%).
                   </p>
                   <p className="mt-2.5 text-xs sm:text-[13px] leading-relaxed text-slate-300">
-                    Growth is directly correlated with the 18 landing page refreshes and schema fixes logged this month.
-                    Targeted queries for <span className="text-white font-mono bg-white/10 px-1 py-0.5 rounded text-[11px]">emergency plumber</span> climbed to position 3.2, lifting goal conversions to 47 (+6.8%).
+                    Work logged this month includes landing-page refreshes and schema fixes.
+                    Those items line up with the movement above. This is correlation, not a claim that the work caused it.
+                    Query <span className="text-white font-mono bg-white/10 px-1 py-0.5 rounded text-[11px]">emergency plumber</span> is at position 3.2. Conversions are 47 (+6.8%).
                   </p>
                 </div>
 

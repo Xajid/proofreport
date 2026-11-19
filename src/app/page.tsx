@@ -14,26 +14,26 @@ import {
 const WHY_CARDS = [
   {
     icon: Shield,
-    title: "100% White-label",
-    body: "Your agency name, logo, brand accent colors, and custom domains. Your clients will never see SearchProof anywhere.",
+    title: "Your name on the PDF",
+    body: "Paid reports use your agency name, logo, and brand color. Trial PDFs and share links stay watermarked.",
   },
   {
     icon: BarChart3,
-    title: "Verified Google GA4 & GSC",
-    body: "Official Google OAuth pulls actual organic sessions, rankings, CTR, and conversion goals directly — no CSV exports.",
+    title: "GA4 and Search Console",
+    body: "You pick the property after Google OAuth. If a pull fails, the report stops. Demo numbers are never labeled live.",
   },
   {
     icon: Zap,
-    title: "Causality-Focused AI Narratives",
-    body: "GPT-4 turns dry metrics and your logged hours into a compelling story that justifies your retainer month after month.",
+    title: "Work, then the numbers",
+    body: "The draft lists what you shipped, what moved, and states the link is correlation. You edit three next actions before send.",
   },
 ];
 
 const STATS = [
-  { value: "5 mins", label: "average time to review & send", icon: Clock },
-  { value: "100%", label: "white-label — your brand, not ours", icon: Shield },
-  { value: "GA4 + GSC", label: "real live data, zero guesswork", icon: BarChart3 },
-  { value: "14-day", label: "free trial, no credit card needed", icon: Users },
+  { value: "Draft first", label: "nothing sends until you mark it ready", icon: Clock },
+  { value: "Your brand", label: "logo and color on paid PDFs", icon: Shield },
+  { value: "GA4 + GSC", label: "live only after you select a property", icon: BarChart3 },
+  { value: "14 days", label: "one client, then the trial ends", icon: Users },
 ];
 
 export default function LandingPage() {
@@ -71,10 +71,10 @@ export default function LandingPage() {
             Built strictly for SEO operators
           </p>
           <h2 className="font-display mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
-            Why agencies switch to SearchProof
+            A PDF that answers what you did
           </h2>
           <p className="mt-3 text-slate-500 text-[15px]">
-            Traditional dashboard tools dump raw numbers that confuse clients. SearchProof builds the bridge between what you did and why their traffic moved.
+            Dashboards show charts. This report puts the work log next to the period's GA4 and Search Console numbers, and it says when that link is only correlation.
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">

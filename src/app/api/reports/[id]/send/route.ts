@@ -6,7 +6,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { pdfRenderer } from "@/providers/pdf/renderer";
 import { apiErrorMessage, periodLabel } from "@/lib/utils";
-import { getLimits } from "@/lib/plan";
+import { getLimits, trialEndedMessage } from "@/lib/plan";
+import { liveMentions } from "@/lib/mentions";
 import { renderReportEmailHtml } from "@/lib/email-templates";
 import type { MetricsSnapshot } from "@/types/metrics";
 
@@ -36,6 +37,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!report.metricsJson || !report.narrative) {
     return NextResponse.json({ error: "Generate the report before sending" }, { status: 400 });
   }
+  if (getLimits(report.client.org.plan, report.client.org).expired) {
+    return NextResponse.json({ error: trialEndedMessage(), code: "TRIAL_ENDED" }, { status: 403 });
+  }
+  if (report.status !== "ready" && report.status !== "sent") {
+    return NextResponse.json(
+      { error: "Mark the report ready before sending. Generation leaves it as a draft so you can edit it." },
+      { status: 400 }
+    );
+  }
 
   try {
     const body = await req.json().catch(() => ({}));
@@ -64,9 +74,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         (w) => w.periodStart <= report.periodEnd && w.periodEnd >= report.periodStart
       );
 
-      const limits = getLimits(report.client.org.plan);
+      const limits = getLimits(report.client.org.plan, report.client.org);
       const shouldWatermark = limits.watermark || Boolean(report.isSample);
-      const includeAiMentions = limits.aiMentions && report.client.aiMentionsEnabled;
+      const mentions = liveMentions(report.client.aiMentions);
+      const includeAiMentions = limits.aiMentions && report.client.aiMentionsEnabled && mentions.length > 0;
 
       const pdfBuffer = await pdfRenderer.render({
         agencyName: report.client.org.name,
@@ -87,7 +98,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         })),
         watermark: shouldWatermark,
         includeAiMentions,
-        aiMentions: report.client.aiMentions.map((a) => ({
+        aiMentions: mentions.map((a) => ({
           engine: a.engine,
           prompt: a.prompt,
           mentioned: a.mentioned,

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkIsAdminEmail } from "@/lib/admin";
+import { getLimits } from "@/lib/plan";
 import { AppShell } from "@/components/app-shell";
 import { Providers } from "@/components/providers";
 
@@ -13,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const org = session.user.orgId
     ? await prisma.organization.findUnique({
         where: { id: session.user.orgId },
-        select: { name: true, plan: true },
+        select: { name: true, plan: true, trialEndsAt: true, createdAt: true, clientSlots: true },
       })
     : null;
 
@@ -23,6 +24,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     : 0;
 
   const isAdmin = checkIsAdminEmail(session.user.email);
+  const limits = getLimits(org?.plan, org);
 
   return (
     <Providers>
@@ -31,6 +33,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         plan={org?.plan ?? undefined}
         clientCount={clientCount}
         isAdmin={isAdmin}
+        trialExpired={limits.expired}
+        trialEndsAt={limits.trialEndsAt ? limits.trialEndsAt.toISOString() : null}
       >
         {children}
       </AppShell>

@@ -64,7 +64,7 @@ export function renderReportEmailHtml({
           <tr>
             <td style="padding: 36px 36px 28px 36px;">
               <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 700; color: #0f172a; letter-spacing: -0.02em;">
-                Monthly SEO & AEO Report
+                Monthly SEO report
               </h1>
               <p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b;">
                 Prepared for <strong>${clientName}</strong> · Period: <strong>${period}</strong>
@@ -79,7 +79,7 @@ export function renderReportEmailHtml({
               }
 
               <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #334155;">
-                Your latest performance analytics, work completed, and strategic next actions for organic search and AI engine visibility are ready for review.
+                This month's work log, search metrics, and next actions are ready to read.
               </p>
 
               <!-- CTA Button -->
@@ -87,7 +87,7 @@ export function renderReportEmailHtml({
                 <tr>
                   <td align="center" style="border-radius: 8px; background-color: ${brandColor};">
                     <a href="${shareUrl}" target="_blank" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px; letter-spacing: -0.01em;">
-                      View Live Interactive Report &rarr;
+                      View report &rarr;
                     </a>
                   </td>
                 </tr>
@@ -95,7 +95,7 @@ export function renderReportEmailHtml({
 
               <!-- Attachment Note -->
               <div style="padding: 14px 16px; background-color: #f1f5f9; border-radius: 8px; font-size: 13px; color: #475569; display: flex; align-items: center;">
-                <span>📎 <strong>PDF Copy Attached:</strong> A formal, board-ready presentation copy is attached to this email for your archive.</span>
+                <span><strong>PDF attached.</strong> The same report is attached to this email.</span>
               </div>
             </td>
           </tr>
@@ -103,11 +103,8 @@ export function renderReportEmailHtml({
           <!-- Footer -->
           <tr>
             <td style="padding: 24px 36px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; text-align: center;">
-              <p style="margin: 0 0 6px 0;">
+              <p style="margin: 0;">
                 Sent by <strong>${agencyName}</strong>
-              </p>
-              <p style="margin: 0; font-size: 11px;">
-                Powered by <a href="https://getsearchproof.com" target="_blank" style="color: #64748b; text-decoration: underline;">SearchProof</a> · Enterprise Client Reporting
               </p>
             </td>
           </tr>

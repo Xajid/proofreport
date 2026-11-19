@@ -1,5 +1,6 @@
-import { subMonths, formatISO, startOfMonth, endOfMonth } from "date-fns";
+import { formatISO } from "date-fns";
 import type { MetricsSnapshot } from "@/types/metrics";
+import { previousPeriod } from "@/lib/utils";
 
 function hashSeed(input: string): number {
   let h = 0;
@@ -30,8 +31,7 @@ export function createMockMetrics(
   const conversions = 18 + Math.floor(rnd() * 60);
   const convDelta = -10 + rnd() * 35;
 
-  const prevStart = startOfMonth(subMonths(periodStart, 1));
-  const prevEnd = endOfMonth(subMonths(periodStart, 1));
+  const { prevStart, prevEnd } = previousPeriod(periodStart, periodEnd);
 
   const queries = [
     "best plumber near me",
@@ -48,6 +48,7 @@ export function createMockMetrics(
 
   return {
     provider: "mock",
+    sources: { ga4: false, gsc: false },
     periodStart: periodStart.toISOString(),
     periodEnd: periodEnd.toISOString(),
     previousPeriodStart: prevStart.toISOString(),
@@ -60,6 +61,11 @@ export function createMockMetrics(
       pageviews: Math.floor(baseSessions * (1.8 + rnd())),
       pageviewsDeltaPct: Number((sessionsDelta + 2.1).toFixed(1)),
     },
+    topLandingPages: [
+      { path: "/services", sessions: Math.floor(baseSessions * 0.22) },
+      { path: "/contact", sessions: Math.floor(baseSessions * 0.11) },
+      { path: "/blog/local-guide", sessions: Math.floor(baseSessions * 0.07) },
+    ],
     search: {
       clicks,
       clicksDeltaPct: Number(clicksDelta.toFixed(1)),

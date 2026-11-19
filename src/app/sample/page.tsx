@@ -17,7 +17,7 @@ export default function SamplePage() {
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-slate-500">
           A watermarked monthly SEO report with cover, executive narrative, organic metrics,
-          conversions, work log, next actions, and optional AI mentions page.
+          conversions, work log, and next actions. The sample is watermarked and uses a demo snapshot.
         </p>
 
         {/* Report preview card */}

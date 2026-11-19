@@ -8,10 +8,7 @@ export interface NarrativeProvider {
 
 export const narrativeProvider: NarrativeProvider = {
   async generate(input) {
-    if (process.env.OPENAI_API_KEY) {
-      return generateOpenAINarrative(input);
-    }
-    return generateTemplateNarrative(input);
+    return generateOpenAINarrative(input);
   },
 };
 

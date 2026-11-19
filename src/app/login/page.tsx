@@ -56,32 +56,20 @@ export default function LoginPage() {
           {/* Value prop */}
           <div className="max-w-sm">
             <p className="font-display text-3xl font-semibold leading-snug text-white">
-              The reporting layer agencies use to keep retainers.
+              A monthly PDF your client can forward.
             </p>
             <p className="mt-5 text-[15px] leading-relaxed text-slate-400">
-              Metrics, work proof, narrative, and next actions — packaged as a branded monthly PDF.
+              Work log, GA4, Search Console, and three next actions. The draft stays a draft until you send it.
             </p>
 
-            {/* Testimonial card */}
-            <div className="mt-10 rounded-[12px] border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-              <p className="text-sm leading-relaxed text-slate-300 italic">
-                &ldquo;SearchProof cut our monthly report time from 3 hours to 20 minutes. Clients actually read these now.&rdquo;
-              </p>
-              <div className="mt-4 flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-xs font-bold">
-                  NS
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-200">Northline SEO</p>
-                  <p className="text-xs text-slate-500">Demo workspace</p>
-                </div>
-              </div>
-            </div>
+            <ul className="mt-10 space-y-3 text-sm text-slate-300">
+              <li>Trial is 14 days and one client. The PDF stays watermarked.</li>
+              <li>Live numbers appear only after you select a Google property.</li>
+              <li>The narrative says correlation. It does not claim your work caused the change.</li>
+            </ul>
           </div>
 
-          <p className="text-xs text-slate-600">
-            Trusted demo workspace · Northline SEO
-          </p>
+          <p className="text-xs text-slate-600">SearchProof</p>
         </div>
       </div>
 

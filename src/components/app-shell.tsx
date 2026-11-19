@@ -30,12 +30,16 @@ export function AppShell({
   plan,
   clientCount,
   isAdmin,
+  trialEndsAt,
+  trialExpired,
 }: {
   children: React.ReactNode;
   orgName?: string;
   plan?: string;
   clientCount?: number;
   isAdmin?: boolean;
+  trialEndsAt?: string | null;
+  trialExpired?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -170,6 +174,20 @@ export function AppShell({
 
         {/* Page content */}
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          {plan === "trial" && trialExpired && (
+            <p className="mb-4 rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              Your 14-day trial has ended. Upgrade to generate or send another report.{" "}
+              <Link href="/pricing" className="font-semibold underline">
+                View plans
+              </Link>
+            </p>
+          )}
+          {plan === "trial" && !trialExpired && trialEndsAt && (
+            <p className="mb-4 rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+              Trial ends {new Date(trialEndsAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}.
+              One client, watermarked PDF.
+            </p>
+          )}
           {children}
         </main>
       </div>

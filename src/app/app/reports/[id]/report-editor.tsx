@@ -42,6 +42,7 @@ type Report = {
   sentTo: string | null;
   watermark: boolean;
   isSample: boolean;
+  narrativeSource?: string | null;
   client: {
     id: string;
     name: string;
@@ -90,7 +91,7 @@ export function ReportEditor({ report: initial }: { report: Report }) {
     }
     setReport({ ...report, ...data });
     setPreviewKey((k) => k + 1);
-    setMsg(status === "ready" ? "Marked ready for delivery ✓" : "Draft saved ✓");
+    setMsg(status === "ready" ? "Marked ready. You can send it now." : "Draft saved.");
   }
 
   async function regenerate() {
@@ -206,7 +207,18 @@ export function ReportEditor({ report: initial }: { report: Report }) {
             </Badge>
             {metrics && (
               <Badge tone={metrics.provider === "google" ? "accent" : "neutral"}>
-                {metrics.provider === "google" ? "Live Google Data" : "Demo Snapshot"}
+                {metrics.provider === "google"
+                  ? `Live ${[metrics.sources?.ga4 ? "GA4" : "", metrics.sources?.gsc ? "GSC" : ""].filter(Boolean).join(" + ") || "Google"}`
+                  : "Demo snapshot"}
+              </Badge>
+            )}
+            {report.narrativeSource && (
+              <Badge tone="neutral">
+                {report.narrativeSource === "nvidia"
+                  ? "Nemotron draft"
+                  : report.narrativeSource === "openai"
+                    ? "OpenAI draft"
+                    : "Template draft"}
               </Badge>
             )}
             {report.watermark && <Badge tone="warning">watermarked</Badge>}

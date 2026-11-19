@@ -36,12 +36,15 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+type PropertyCandidate = { id: string; label: string };
+
 type Connection = {
   id: string;
   type: string;
   provider: string;
   displayName: string | null;
   externalId: string | null;
+  metaJson?: string | null;
 };
 
 type WorkLog = {
@@ -68,6 +71,8 @@ type AiMention = {
   mentioned: boolean;
   prompt: string;
   checkedAt?: string;
+  source?: string;
+  citations?: string[];
 };
 
 type Client = {
@@ -88,15 +93,23 @@ export function ClientDetail({
   client: initial,
   googleConfigured = false,
   plan = "trial",
+  clientSlots,
+  trialExpired = false,
 }: {
   client: Client;
   googleConfigured?: boolean;
   plan?: string;
+  clientSlots?: number;
+  trialExpired?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const oauthParam = searchParams.get("oauth");
-  const limits = getLimits(plan);
+  const limits = getLimits(plan, {
+    plan,
+    clientSlots: plan === "agency" ? null : clientSlots,
+    trialEndsAt: trialExpired ? new Date(0) : null,
+  });
 
   const monthOptions = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
@@ -130,11 +143,22 @@ export function ClientDetail({
 
   const [customPrompt, setCustomPrompt] = useState("");
   const [busy, setBusy] = useState("");
+  const [propertyPick, setPropertyPick] = useState<Record<string, string>>({});
   const [message, setMessage] = useState(
     oauthParam === "not_configured"
-      ? "Google OAuth is not configured on this server (set GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET). Using demo provider."
+      ? "Google OAuth is not configured on this server. Demo connect still works and is labeled as a demo snapshot."
       : oauthParam?.startsWith("connected_")
-      ? `Connected ${oauthParam.replace("connected_", "").toUpperCase()} via Google OAuth ✓`
+      ? `Connected ${oauthParam.replace("connected_", "").toUpperCase()}. That property will be used on the next draft.`
+      : oauthParam === "select_ga4"
+      ? "Google Analytics is connected. Choose the GA4 property below before generating."
+      : oauthParam === "select_gsc"
+      ? "Search Console is connected. Choose the site below before generating."
+      : oauthParam === "no_ga4_properties"
+      ? "Google signed in, but no GA4 properties were returned for this account."
+      : oauthParam === "no_gsc_sites"
+      ? "Google signed in, but no Search Console sites were returned for this account."
+      : oauthParam === "token_failed"
+      ? "Google did not return a token. Try connecting again."
       : ""
   );
 
@@ -163,7 +187,15 @@ export function ClientDetail({
   async function refresh() {
     const res = await fetch(`/api/clients/${client.id}`);
     const data = await res.json();
-    setClient(data);
+    setClient({
+      ...data,
+      aiMentions: (data.aiMentions || []).map((row: AiMention & { citationsJson?: string | null }) => ({
+        ...row,
+        citations:
+          row.citations ??
+          (row.citationsJson ? (JSON.parse(row.citationsJson) as string[]) : []),
+      })),
+    });
     router.refresh();
   }
 
@@ -176,6 +208,37 @@ export function ClientDetail({
     });
     setBusy("");
     setMessage(`${type.toUpperCase()} connected with demo provider ✓`);
+    await refresh();
+  }
+
+  function candidatesFor(conn: Connection): PropertyCandidate[] {
+    if (!conn.metaJson) return [];
+    try {
+      const meta = JSON.parse(conn.metaJson) as { candidates?: PropertyCandidate[] };
+      return meta.candidates ?? [];
+    } catch {
+      return [];
+    }
+  }
+
+  async function saveProperty(type: "ga4" | "gsc", externalId: string) {
+    if (!externalId) {
+      setMessage("Choose a property first.");
+      return;
+    }
+    setBusy(`prop-${type}`);
+    const res = await fetch("/api/connections/select", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clientId: client.id, type, externalId }),
+    });
+    const data = await res.json();
+    setBusy("");
+    if (!res.ok) {
+      setMessage(data.error || "Could not save that property");
+      return;
+    }
+    setMessage(`${type === "ga4" ? "GA4" : "Search Console"} property saved.`);
     await refresh();
   }
 
@@ -312,13 +375,19 @@ export function ClientDetail({
 
   async function seedAiMentions() {
     setBusy("ai");
-    await fetch("/api/ai-mentions", {
+    const res = await fetch("/api/ai-mentions", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ clientId: client.id, customPrompt }),
     });
-    setCustomPrompt("");
+    const data = await res.json().catch(() => ({}));
     setBusy("");
+    if (!res.ok) {
+      setMessage(data.error || "The model check failed. Nothing was saved.");
+      return;
+    }
+    setCustomPrompt("");
+    setMessage("Live check saved. The prompt, model, and any URLs from the answer are stored.");
     await refresh();
   }
 
@@ -513,7 +582,12 @@ export function ClientDetail({
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-slate-900">{row.label}</p>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      {row.conn ? (
+                      {row.conn?.provider === "google" && !row.conn.externalId ? (
+                        <>
+                          <XCircle className="h-3 w-3 text-amber-500 shrink-0" />
+                          <span className="text-xs text-amber-700">Connected — choose a property</span>
+                        </>
+                      ) : row.conn ? (
                         <>
                           <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
                           <span className="text-xs text-slate-500 truncate">
@@ -529,6 +603,33 @@ export function ClientDetail({
                     </div>
                   </div>
                 </div>
+                {row.conn?.provider === "google" && candidatesFor(row.conn).length > 0 && (
+                  <div className="flex w-full flex-wrap items-end gap-2">
+                    <label className="min-w-[12rem] flex-1 text-xs font-medium text-slate-600">
+                      Property
+                      <select
+                        className="mt-1 h-9 w-full rounded-[8px] border border-slate-200 bg-white px-2 text-sm text-slate-900"
+                        value={propertyPick[row.key] || row.conn.externalId || ""}
+                        onChange={(e) => setPropertyPick((prev) => ({ ...prev, [row.key]: e.target.value }))}
+                      >
+                        <option value="">Choose a property</option>
+                        {candidatesFor(row.conn).map((candidate) => (
+                          <option key={candidate.id} value={candidate.id}>
+                            {candidate.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <Button
+                      size="sm"
+                      type="button"
+                      onClick={() => saveProperty(row.key, propertyPick[row.key] || row.conn?.externalId || "")}
+                      disabled={!!busy}
+                    >
+                      Use property
+                    </Button>
+                  </div>
+                )}
                 <div className="flex items-center gap-1.5">
                   {googleConfigured && (
                     <a href={`/api/integrations/google/start?clientId=${client.id}&type=${row.key}`}>
@@ -868,7 +969,9 @@ export function ClientDetail({
                   <Bot className="h-4 w-4 text-slate-400" />
                   AI mentions
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">Optional last PDF page for AEO visibility.</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Asks Nemotron when NVIDIA_API_KEY is set. Live rows store the prompt, model, time, and URLs from the answer.
+                </p>
               </div>
               {!limits.aiMentions ? (
                 <Link href="/pricing">
@@ -895,44 +998,37 @@ export function ClientDetail({
               )}
             </div>
             <div className="p-4 space-y-3">
-              {!limits.aiMentions ? (
-                <div className="rounded-[8px] bg-amber-50/80 border border-amber-200/80 p-3.5 text-xs text-amber-800 space-y-2">
-                  <p className="font-semibold text-amber-900">Plan upgrade required</p>
-                  <p className="leading-relaxed">
-                    AI engine citation audits (ChatGPT, Perplexity, Gemini visibility) require an active Per-Client or Agency plan.
+              <div className="space-y-2">
+                {!limits.aiMentions && (
+                  <p className="text-xs leading-relaxed text-slate-500">
+                    You can run a check on the trial. The row is added to the client PDF after you upgrade and enable it.
                   </p>
-                  <Link href="/pricing" className="inline-block font-semibold text-amber-900 underline underline-offset-2">
-                    View plans & upgrade →
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Input
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder="Optional custom buyer prompt…"
-                  />
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={seedAiMentions}
-                    disabled={busy === "ai"}
-                    className="w-full"
-                  >
-                    {busy === "ai" ? (
-                      <span className="flex items-center gap-2">
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        Running check…
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        <Zap className="h-3.5 w-3.5" />
-                        Run AEO check
-                      </span>
-                    )}
-                  </Button>
-                </div>
-              )}
+                )}
+                <Input
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="Buyer question, or leave blank for a default"
+                />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={seedAiMentions}
+                  disabled={busy === "ai"}
+                  className="w-full"
+                >
+                  {busy === "ai" ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      Asking the model…
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Zap className="h-3.5 w-3.5" />
+                      Run live check
+                    </span>
+                  )}
+                </Button>
+              </div>
 
               {client.aiMentions.length > 0 ? (
                 <ul className="space-y-2 max-h-72 overflow-y-auto pr-0.5">
@@ -944,9 +1040,16 @@ export function ClientDetail({
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <Bot className="h-3.5 w-3.5 text-slate-400" />
-                          <span className="text-sm font-semibold capitalize text-slate-800">{a.engine}</span>
+                          <span
+                            className={`text-sm font-semibold text-slate-800 ${a.engine.includes("/") ? "" : "capitalize"}`}
+                          >
+                            {a.engine}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1.5">
+                          <Badge tone={a.source === "live" ? "success" : "neutral"}>
+                            {a.source === "live" ? "Live" : "Demo"}
+                          </Badge>
                           <Badge tone={a.mentioned ? "success" : "neutral"} dot>
                             {a.mentioned ? "Mentioned" : "Not found"}
                           </Badge>
@@ -961,12 +1064,23 @@ export function ClientDetail({
                         </div>
                       </div>
                       <p className="mt-1 text-xs text-slate-500 line-clamp-2">{a.prompt}</p>
+                      {a.citations && a.citations.length > 0 && (
+                        <ul className="mt-1 space-y-0.5">
+                          {a.citations.map((url) => (
+                            <li key={url} className="truncate text-[11px] text-teal-800">
+                              <a href={url} target="_blank" rel="noreferrer">
+                                {url}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </li>
                   ))}
                 </ul>
               ) : (
                 <p className="text-xs text-slate-500 text-center py-2">
-                  Run a check above to track AEO visibility over time.
+                  A live check stores the model answer. Demo rows from earlier stay off the PDF.
                 </p>
               )}
             </div>

@@ -38,6 +38,7 @@ export async function POST(req: Request) {
     const metadata = data.metadata || {};
     const orgId = metadata.orgId;
     const plan = metadata.plan;
+    const quantity = Math.max(1, Number(metadata.quantity) || 1);
     const customerId = data.customer?.customer_id || data.customer_id;
 
     switch (eventType) {
@@ -49,6 +50,7 @@ export async function POST(req: Request) {
             where: { id: orgId },
             data: {
               plan,
+              ...(plan === "per_client" ? { clientSlots: quantity } : {}),
               ...(customerId ? { stripeCustomerId: customerId } : {}),
             },
           });
@@ -62,12 +64,12 @@ export async function POST(req: Request) {
         if (orgId) {
           await prisma.organization.update({
             where: { id: orgId },
-            data: { plan: "trial" },
+            data: { plan: "trial", clientSlots: 1, trialEndsAt: new Date() },
           });
         } else if (customerId) {
           await prisma.organization.updateMany({
             where: { stripeCustomerId: customerId },
-            data: { plan: "trial" },
+            data: { plan: "trial", clientSlots: 1, trialEndsAt: new Date() },
           });
         }
         break;

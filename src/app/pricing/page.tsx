@@ -13,6 +13,7 @@ function PricingInner() {
   const search = useSearchParams();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [clientQuantity, setClientQuantity] = useState(1);
 
   const cancelled = search.get("checkout") === "cancel";
 
@@ -24,10 +25,13 @@ function PricingInner() {
     setLoading(plan);
     setError("");
     try {
-      const res = await fetch("/api/stripe/checkout", {
+      const res = await fetch("/api/dodo/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({
+          plan,
+          quantity: plan === "per_client" ? clientQuantity : 1,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -77,6 +81,20 @@ function PricingInner() {
       suffix: "/client/mo",
       detail: "Full narrative engine for freelancers & boutique agencies.",
       cta: (
+        <div className="space-y-3">
+          <label className="block text-xs font-semibold text-slate-600" htmlFor="client-slots">
+            Client slots at $49 each
+            <input
+              id="client-slots"
+              type="number"
+              min={1}
+              max={100}
+              inputMode="numeric"
+              value={clientQuantity}
+              onChange={(e) => setClientQuantity(Math.min(100, Math.max(1, Number(e.target.value) || 1)))}
+              className="mt-1.5 h-10 w-full rounded-[8px] border border-slate-200 px-3 text-sm text-slate-900"
+            />
+          </label>
         <Button
           className="w-full"
           size="lg"
@@ -95,13 +113,14 @@ function PricingInner() {
             </span>
           )}
         </Button>
+        </div>
       ),
       features: [
-        "Work log + AI executive narrative",
-        "Branded PDF export — no watermark",
-        "GA4 + Search Console auto-pull",
-        "AI mentions (AEO visibility)",
-        "Client share links & email delivery",
+        "Work log plus an editable narrative",
+        "Branded PDF with the watermark removed",
+        "Live GA4 and Search Console after you pick a property",
+        "Email the PDF and a share link",
+        "One paid slot per client you add at checkout",
       ],
       featured: true,
       badge: "Most popular",
@@ -111,7 +130,7 @@ function PricingInner() {
       name: "Unlimited Agency",
       price: "$249",
       suffix: "/mo",
-      detail: "Unlimited clients, team seats, and scheduled auto-generation.",
+      detail: "Unlimited clients. The monthly job drafts last month's report for you to review.",
       cta: (
         <Button
           variant="secondary"
@@ -136,9 +155,8 @@ function PricingInner() {
       features: [
         "Everything in Per Client",
         "Unlimited client domains",
-        "Monthly auto-generate on the 1st",
-        "Team-ready branding & seats",
-        "Priority support",
+        "Monthly draft on your schedule day — you still mark it ready",
+        "Your logo and brand color on the PDF",
       ],
       featured: false,
       badge: null,

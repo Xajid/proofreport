@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { clientSchema } from "@/lib/validators";
 import { apiErrorMessage } from "@/lib/utils";
-import { getLimits } from "@/lib/plan";
+import { getLimits, trialEndedMessage } from "@/lib/plan";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -25,7 +25,10 @@ export async function POST(req: Request) {
   if (!session?.user?.orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const org = await prisma.organization.findUnique({ where: { id: session.user.orgId } });
-  const limits = getLimits(org?.plan ?? "trial");
+  const limits = getLimits(org?.plan, org);
+  if (limits.expired) {
+    return NextResponse.json({ error: trialEndedMessage(), code: "TRIAL_ENDED" }, { status: 403 });
+  }
   const currentCount = await prisma.client.count({ where: { orgId: session.user.orgId } });
   if (currentCount >= limits.maxClients) {
     return NextResponse.json({

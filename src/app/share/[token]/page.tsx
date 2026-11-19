@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatNumber, formatPct, periodLabel } from "@/lib/utils";
 import { getLimits } from "@/lib/plan";
+import { liveMentions } from "@/lib/mentions";
 import type { MetricsSnapshot } from "@/types/metrics";
 import { Download, Globe, TrendingUp, TrendingDown, CheckCircle2, Sparkles } from "lucide-react";
 
@@ -38,7 +39,8 @@ export default async function PublicShareReportPage({
   );
   const period = periodLabel(report.periodStart, report.periodEnd);
   const brandColor = report.client.org.primaryColor || "#0d6e68";
-  const limits = getLimits(report.client.org.plan);
+  const limits = getLimits(report.client.org.plan, report.client.org);
+  const mentions = liveMentions(report.client.aiMentions);
   const shouldWatermark = limits.watermark || Boolean(report.isSample) || Boolean(report.watermark);
 
   const kpis = [
@@ -162,14 +164,14 @@ export default async function PublicShareReportPage({
         )}
 
         {/* AI Mentions */}
-        {report.client.aiMentionsEnabled && report.client.aiMentions.length > 0 && (
+        {mentions.length > 0 && (
           <section className="panel p-6">
             <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-slate-500">
               <Sparkles className="h-4 w-4 text-teal-600" />
               AI Search Visibility
             </h2>
             <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-              {report.client.aiMentions.map((m) => (
+              {mentions.map((m) => (
                 <div
                   key={m.id}
                   className="flex items-center justify-between rounded-[8px] border border-slate-200/80 px-3.5 py-2.5"
@@ -185,7 +187,7 @@ export default async function PublicShareReportPage({
         )}
 
         <footer className="pt-4 text-center text-xs text-slate-400">
-          Prepared by {report.client.org.name} · Powered by SearchProof
+          Prepared by {report.client.org.name}
         </footer>
       </main>
     </div>

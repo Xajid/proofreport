@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { pdfRenderer } from "@/providers/pdf/renderer";
 import type { MetricsSnapshot } from "@/types/metrics";
 import { getLimits } from "@/lib/plan";
+import { liveMentions } from "@/lib/mentions";
 
 export async function GET(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -49,9 +50,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
     };
   });
 
-  const limits = getLimits(report.client.org.plan);
-  const shouldWatermark = limits.watermark || Boolean(report.isSample);
-  const includeAiMentions = limits.aiMentions && report.client.aiMentionsEnabled;
+  const limits = getLimits(report.client.org.plan, report.client.org);
+  const shouldWatermark = limits.watermark || Boolean(report.isSample) || Boolean(report.watermark);
+  const mentions = liveMentions(report.client.aiMentions);
+  const includeAiMentions = limits.aiMentions && report.client.aiMentionsEnabled && mentions.length > 0;
 
   const buffer = await pdfRenderer.render({
     agencyName: report.client.org.name,
@@ -73,7 +75,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
     })),
     watermark: shouldWatermark,
     includeAiMentions,
-    aiMentions: report.client.aiMentions.map((a) => ({
+    aiMentions: mentions.map((a) => ({
       engine: a.engine,
       prompt: a.prompt,
       mentioned: a.mentioned,

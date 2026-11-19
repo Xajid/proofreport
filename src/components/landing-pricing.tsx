@@ -1,32 +1,29 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Zap, ArrowRight, ShieldCheck, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const FAQS = [
   {
-    q: "Do my clients see SearchProof branding anywhere?",
-    a: "Never. Reports display your agency name, logo, primary brand color, and contact info. Public share links and PDFs are 100% white-labeled.",
+    q: "Do my clients see SearchProof branding?",
+    a: "Paid PDFs use your agency name, logo, and color. Trial reports and their share links keep a SearchProof watermark. Share links live on getsearchproof.com.",
   },
   {
-    q: "Do clients need to create an account or sign in?",
-    a: "No. Your clients never have to log in. They receive a clean PDF in their email and a direct, secure view link (e.g. yourdomain.com/share/token).",
+    q: "Do clients need to create an account?",
+    a: "No. They get the PDF by email and a view link. They do not sign in.",
   },
   {
-    q: "How does the Google Analytics 4 & Search Console connection work?",
-    a: "You authenticate once with Google OAuth from your client settings. SearchProof securely pulls verified organic clicks, impressions, sessions, and conversions automatically.",
+    q: "How does GA4 and Search Console connect?",
+    a: "You sign in with Google, then pick the property from the list we get back. If that pull fails, generation stops and names the source. Demo numbers are never saved as live data.",
   },
   {
-    q: "Can I edit the AI executive narrative before sending?",
-    a: "Yes, 100%. The AI writes the initial draft tying your work to the numbers, and you have a full split-screen live PDF preview editor to tweak anything before sending.",
+    q: "Can I edit the narrative before sending?",
+    a: "Yes. Generation leaves the report as a draft: shipped work, what moved, a correlation note, and three next actions. You edit those, mark it ready, then send.",
   },
 ];
 
 export function LandingPricing() {
-  const [annual, setAnnual] = useState(false);
-
   const plans = [
     {
       id: "starter",
@@ -41,11 +38,11 @@ export function LandingPricing() {
       ctaLink: "/register",
       ctaVariant: "outline" as const,
       features: [
-        "1 active client domain",
-        "Full AI narrative engine",
-        "GA4 + Search Console connector",
-        "Interactive PDF live preview",
-        "Sample watermark on export",
+        "1 client for 14 days",
+        "Editable narrative draft",
+        "GA4 and Search Console, or a labeled demo snapshot",
+        "PDF preview before you send",
+        "Watermark on the PDF and share link",
       ],
     },
     {
@@ -53,7 +50,7 @@ export function LandingPricing() {
       name: "Per Client",
       badge: "Most Popular",
       badgeTone: "bg-teal-50 text-teal-800 border-teal-200 ring-1 ring-teal-600/20",
-      price: annual ? "$39" : "$49",
+      price: "$49",
       suffix: "/client/mo",
       subtext: "For freelancers & boutique agencies running monthly retainers.",
       featured: true,
@@ -61,14 +58,13 @@ export function LandingPricing() {
       ctaLink: "/register",
       ctaVariant: "default" as const,
       features: [
-        "Pay only for clients you manage",
-        "100% white-labeled PDF (no watermark)",
-        "Custom agency logo & brand colors",
-        "Verified GA4 & Search Console sync",
-        "AI executive narrative generation",
-        "Send directly to client email (Resend)",
-        "Public web report share links",
-        "Work log & hours tracking",
+        "Buy a slot for each client at checkout",
+        "PDF without the trial watermark",
+        "Your logo and brand color",
+        "Live GA4 and Search Console after you pick a property",
+        "Narrative draft you edit before send",
+        "Email the PDF and a share link",
+        "Work log with hours",
       ],
     },
     {
@@ -76,7 +72,7 @@ export function LandingPricing() {
       name: "Unlimited Agency",
       badge: "Full Roster",
       badgeTone: "bg-indigo-50 text-indigo-800 border-indigo-200",
-      price: annual ? "$199" : "$249",
+      price: "$249",
       suffix: "/mo",
       subtext: "For growing agencies managing unlimited client accounts.",
       featured: false,
@@ -86,11 +82,8 @@ export function LandingPricing() {
       features: [
         "Unlimited client domains",
         "Everything in Per Client",
-        "Automated monthly cron scheduler",
-        "Search & status filtering portfolio",
-        "Custom AI Engine citation checks",
-        "Historical 6-month visual trends",
-        "Priority agency support",
+        "A monthly job that drafts last month's report",
+        "You still review and mark each draft ready",
       ],
     },
   ];
@@ -110,34 +103,7 @@ export function LandingPricing() {
             Every plan includes a 14-day free trial. No credit card required to start.
           </p>
 
-          {/* Billing Cadence Toggle */}
-          <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50/80 p-1 shadow-[var(--shadow-xs)]">
-            <button
-              type="button"
-              onClick={() => setAnnual(false)}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-                !annual
-                  ? "bg-white text-slate-900 shadow-sm border border-slate-200/80"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              Monthly billing
-            </button>
-            <button
-              type="button"
-              onClick={() => setAnnual(true)}
-              className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-                annual
-                  ? "bg-teal-700 text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              Annual billing
-              <span className={`text-[10px] uppercase tracking-wider font-bold rounded-full px-1.5 py-0.2 ${annual ? "bg-white/20 text-white" : "bg-teal-100 text-teal-800"}`}>
-                Save 20%
-              </span>
-            </button>
-          </div>
+          <p className="mt-6 text-xs font-medium text-slate-500">Monthly billing. Choose how many client slots to buy on the pricing page.</p>
         </div>
 
         {/* 3-Card Grid */}

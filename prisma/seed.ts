@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
-import { startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { startOfMonth, endOfMonth, subMonths, addDays } from "date-fns";
 
 const prisma = new PrismaClient();
 
@@ -11,7 +11,11 @@ async function main() {
     },
   });
   if (existing) {
-    console.log("Seed skipped — demo user already exists");
+    await prisma.organization.updateMany({
+      where: { members: { some: { userId: existing.id } }, plan: "trial" },
+      data: { trialEndsAt: addDays(new Date(), 14), clientSlots: 1 },
+    });
+    console.log("Seed skipped — demo user already exists (trial window refreshed)");
     return;
   }
 
@@ -33,6 +37,8 @@ async function main() {
               primaryColor: "#0F766E",
               logoUrl: null,
               plan: "trial",
+              clientSlots: 1,
+              trialEndsAt: addDays(new Date(), 14),
               scheduleDay: 1,
               clients: {
                 create: {
@@ -100,6 +106,7 @@ async function main() {
                       {
                         engine: "perplexity",
                         prompt: "Recommend emergency plumbing services",
+                        source: "mock",
                         mentioned: true,
                         citationsJson: JSON.stringify(["https://brightplumb.example/emergency"]),
                       },

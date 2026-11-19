@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHmac } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { listGa4Properties, listGscSites, matchingSites, type PropertyCandidate } from "@/providers/metrics/properties";
 
 function verifyState(token: string): { clientId: string; type: "ga4" | "gsc"; orgId: string } | null {
   try {
@@ -18,6 +19,21 @@ function verifyState(token: string): { clientId: string; type: "ga4" | "gsc"; or
   } catch {
     return null;
   }
+}
+
+function chooseProperty(candidates: PropertyCandidate[]): {
+  externalId: string | null;
+  displayName: string;
+  needsPick: boolean;
+} {
+  if (candidates.length === 1) {
+    return { externalId: candidates[0].id, displayName: candidates[0].label, needsPick: false };
+  }
+  return {
+    externalId: null,
+    displayName: candidates.length === 0 ? "No properties returned" : "Choose a property",
+    needsPick: true,
+  };
 }
 
 export async function GET(req: Request) {
@@ -63,25 +79,24 @@ export async function GET(req: Request) {
     refresh_token?: string;
   };
 
-  let externalId = state.type === "ga4" ? undefined : `sc-domain:${client.domain}`;
-  let displayName =
-    state.type === "ga4" ? `GA4 · ${client.name}` : `GSC · ${client.domain}`;
-
-  if (tokens.access_token && state.type === "gsc") {
-    const sitesRes = await fetch("https://www.googleapis.com/webmasters/v3/sites", {
-      headers: { Authorization: `Bearer ${tokens.access_token}` },
-    });
-    if (sitesRes.ok) {
-      const sitesJson = (await sitesRes.json()) as {
-        siteEntry?: { siteUrl: string }[];
-      };
-      const match = sitesJson.siteEntry?.find((s) => s.siteUrl.includes(client.domain));
-      if (match) {
-        externalId = match.siteUrl;
-        displayName = `GSC · ${match.siteUrl}`;
-      }
-    }
+  let candidates: PropertyCandidate[] = [];
+  if (tokens.access_token && state.type === "ga4") {
+    candidates = await listGa4Properties(tokens.access_token);
+  } else if (tokens.access_token && state.type === "gsc") {
+    const sites = await listGscSites(tokens.access_token);
+    const matched = matchingSites(sites, client.domain);
+    candidates = matched.length > 0 ? matched : sites;
   }
+
+  const choice = chooseProperty(candidates);
+  const displayName =
+    state.type === "ga4"
+      ? choice.externalId
+        ? `GA4 · ${choice.displayName}`
+        : "GA4 · choose a property"
+      : choice.externalId
+        ? `GSC · ${choice.displayName}`
+        : "Search Console · choose a property";
 
   await prisma.connection.upsert({
     where: { clientId_type: { clientId: client.id, type: state.type } },
@@ -89,22 +104,30 @@ export async function GET(req: Request) {
       clientId: client.id,
       type: state.type,
       provider: "google",
-      externalId,
+      externalId: choice.externalId,
       displayName,
       accessToken: tokens.access_token || null,
       refreshToken: tokens.refresh_token || null,
-      metaJson: JSON.stringify({ mode: "google-oauth-connected" }),
+      metaJson: JSON.stringify({ mode: "google-oauth-connected", candidates }),
     },
     update: {
       provider: "google",
-      ...(externalId ? { externalId } : {}),
+      externalId: choice.externalId,
       displayName,
       accessToken: tokens.access_token || null,
       ...(tokens.refresh_token ? { refreshToken: tokens.refresh_token } : {}),
-      metaJson: JSON.stringify({ mode: "google-oauth-connected" }),
+      metaJson: JSON.stringify({ mode: "google-oauth-connected", candidates }),
     },
   });
 
-  return NextResponse.redirect(`${origin}/app/clients/${client.id}?oauth=connected_${state.type}`);
-}
+  const flag =
+    candidates.length === 0
+      ? state.type === "ga4"
+        ? "no_ga4_properties"
+        : "no_gsc_sites"
+      : choice.needsPick
+        ? `select_${state.type}`
+        : `connected_${state.type}`;
 
+  return NextResponse.redirect(`${origin}/app/clients/${client.id}?oauth=${flag}`);
+}

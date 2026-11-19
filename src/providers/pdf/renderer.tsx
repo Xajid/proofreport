@@ -931,7 +931,15 @@ export function ReportDocument(data: PdfReportData) {
     .filter(Boolean);
   const actions = (data.nextActions || []).filter((a) => a.trim().length > 0);
   const posDeltaStr = `${m.search.avgPositionDelta >= 0 ? "+" : ""}${m.search.avgPositionDelta}`;
-  const providerLabel = m.provider === "google" ? "GA4 + Search Console (Live)" : "GA4 + GSC (Demo Snapshot)";
+  const providerLabel =
+    m.provider !== "google"
+      ? "Demo snapshot — not live Google data"
+      : !m.sources
+        ? "Live Google"
+        : [
+            m.sources.ga4 ? "GA4 (live)" : "GA4 not connected",
+            m.sources.gsc ? "Search Console (live)" : "Search Console not connected",
+          ].join(" · ");
   const totalHours = data.workLogs.reduce((acc, w) => acc + (w.hours || 0), 0);
 
   const tocSections = [
@@ -1213,7 +1221,7 @@ export function ReportDocument(data: PdfReportData) {
             <Text style={[s.tableHeaderCell, { flex: 1.2, textAlign: "right" }]}>IMPRESSIONS</Text>
             <Text style={[s.tableHeaderCell, { flex: 1, textAlign: "right" }]}>AVG. POS</Text>
           </View>
-          {m.search.topQueries.slice(0, 6).map((q, idx) => (
+          {(m.search.topQueries ?? []).slice(0, 6).map((q, idx) => (
             <View
               key={q.query}
               style={idx % 2 === 1 ? [s.tableRow, s.tableRowAlt] : s.tableRow}
@@ -1231,6 +1239,20 @@ export function ReportDocument(data: PdfReportData) {
             </View>
           ))}
         </View>
+        {(m.topLandingPages?.length ?? 0) > 0 && (
+          <View style={[s.table, { marginTop: 12 }]}>
+            <View style={s.tableHeader}>
+              <Text style={[s.tableHeaderCell, { flex: 3 }]}>TOP LANDING PAGE</Text>
+              <Text style={[s.tableHeaderCell, { flex: 1, textAlign: "right" }]}>SESSIONS</Text>
+            </View>
+            {m.topLandingPages!.slice(0, 6).map((page, idx) => (
+              <View key={page.path} style={idx % 2 === 1 ? [s.tableRow, s.tableRowAlt] : s.tableRow}>
+                <Text style={[s.tableCellBold, { flex: 3 }]}>{page.path}</Text>
+                <Text style={[s.tableCell, { flex: 1, textAlign: "right" }]}>{formatNumber(page.sessions)}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </Page>
 
       {/* ── PAGE 4: CONVERSIONS & GOALS ── */}
@@ -1242,7 +1264,7 @@ export function ReportDocument(data: PdfReportData) {
           s={s}
           eyebrow="03 / CONVERSION IMPACT"
           title="Conversions & Goal Outcomes"
-          subtitle="Lead and revenue-aligned actions attributed to organic search sessions during this period."
+          subtitle="Conversions counted on organic search sessions during this period."
         />
 
         <View style={[s.metricRow, { marginBottom: 14 }]}>
@@ -1267,6 +1289,13 @@ export function ReportDocument(data: PdfReportData) {
         </View>
 
         <Text style={s.h2}>Conversion Breakdown by Goal</Text>
+        {(m.conversions.goals?.length ?? 0) === 0 ? (
+          <View style={s.summaryNoteBox}>
+            <Text style={s.summaryNoteText}>
+              No organic conversion events were returned for this period.
+            </Text>
+          </View>
+        ) : (
         <View style={s.table}>
           <View style={s.tableHeader}>
             <Text style={[s.tableHeaderCell, { flex: 2.2 }]}>CONVERSION GOAL</Text>
@@ -1305,6 +1334,7 @@ export function ReportDocument(data: PdfReportData) {
             );
           })}
         </View>
+        )}
       </Page>
 
       {/* ── PAGE 5: PROOF OF WORK ── */}
@@ -1401,7 +1431,7 @@ export function ReportDocument(data: PdfReportData) {
             s={s}
             eyebrow="06 / AEO & AI VISIBILITY"
             title="AI Search Mentions"
-            subtitle="Answer Engine Optimization (AEO) visibility snapshot evaluating how leading AI assistants reference your brand across high-intent buyer prompts."
+            subtitle="A recorded answer from the model configured for this workspace. The prompt, the model name, and any URLs written in that answer are shown below."
           />
 
           <View style={[s.metricRow, { marginBottom: 16 }]}>
@@ -1427,7 +1457,9 @@ export function ReportDocument(data: PdfReportData) {
             <View key={i} style={s.aiCard} wrap={false}>
               <View style={s.aiCardHeader}>
                 <Text style={s.aiEngineName}>
-                  {mrow.engine.charAt(0).toUpperCase() + mrow.engine.slice(1)}
+                  {mrow.engine.includes("/")
+                    ? mrow.engine
+                    : mrow.engine.charAt(0).toUpperCase() + mrow.engine.slice(1)}
                 </Text>
                 <DeltaBadge
                   s={s}

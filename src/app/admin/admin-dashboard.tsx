@@ -243,10 +243,10 @@ export function AdminDashboard({
                       </p>
                       {org.stripeCustomerId ? (
                         <span className="font-mono text-[10px] text-emerald-400 flex items-center gap-1">
-                          <CheckCircle2 className="h-2.5 w-2.5" /> Stripe customer
+                          <CheckCircle2 className="h-2.5 w-2.5" /> Billing customer
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-500">No Stripe ID</span>
+                        <span className="text-[10px] text-slate-500">No billing id</span>
                       )}
                     </div>
                   </div>

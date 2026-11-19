@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { metricsProvider } from "@/providers/metrics";
+import { applyRefreshedTokens, googleSources, metricsProvider } from "@/providers/metrics";
 import { narrativeProvider } from "@/providers/narrative";
 import { periodLabel } from "@/lib/utils";
-import { getLimits } from "@/lib/plan";
+import { getLimits, trialEndedMessage } from "@/lib/plan";
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -22,26 +22,31 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
   });
   if (!report) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const org = await prisma.organization.findUnique({ where: { id: report.client.org.id } });
-  const limits = getLimits(org?.plan ?? "trial");
+  const org = report.client.org;
+  const limits = getLimits(org.plan, org);
+  if (limits.expired) {
+    return NextResponse.json({ error: trialEndedMessage(), code: "TRIAL_ENDED" }, { status: 403 });
+  }
 
+  const previousStatus = report.status === "generating" ? "draft" : report.status;
   await prisma.reportRun.update({ where: { id }, data: { status: "generating" } });
 
-  const ga4 = report.client.connections.find((c) => c.type === "ga4");
-  const gsc = report.client.connections.find((c) => c.type === "gsc");
-  const preferred =
-    ga4?.provider === "google" || gsc?.provider === "google" ? "google" : "mock";
-
-  const metrics = await metricsProvider.fetch({
+  const sources = googleSources(report.client.connections);
+  const fetched = await metricsProvider.fetch({
     clientDomain: report.client.domain,
     periodStart: report.periodStart,
     periodEnd: report.periodEnd,
-    preferredProvider: preferred,
-    ga4PropertyId: ga4?.externalId,
-    gscSiteUrl: gsc?.externalId,
-    accessToken: ga4?.accessToken || gsc?.accessToken,
-    refreshToken: ga4?.refreshToken || gsc?.refreshToken,
+    preferredProvider: sources.preferredProvider,
+    ga4: sources.ga4,
+    gsc: sources.gsc,
   });
+
+  if (!fetched.ok) {
+    await prisma.reportRun.update({ where: { id }, data: { status: previousStatus } });
+    return NextResponse.json({ error: fetched.error, source: fetched.source }, { status: 422 });
+  }
+
+  await applyRefreshedTokens(fetched.refreshed);
 
   const periodLogs = report.client.workLogs.filter((w) => {
     return w.periodStart <= report.periodEnd && w.periodEnd >= report.periodStart;
@@ -49,22 +54,24 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
 
   const narrative = await narrativeProvider.generate({
     clientName: report.client.name,
-    agencyName: report.client.org.name,
+    agencyName: org.name,
     periodLabel: periodLabel(report.periodStart, report.periodEnd),
-    metrics,
+    metrics: fetched.metrics,
     workLogs: periodLogs.map((w) => ({
       title: w.title,
       body: w.body,
       category: w.category,
+      hours: w.hours,
     })),
   });
 
   const updated = await prisma.reportRun.update({
     where: { id },
     data: {
-      status: "ready",
-      metricsJson: JSON.stringify(metrics),
+      status: "draft",
+      metricsJson: JSON.stringify(fetched.metrics),
       narrative: narrative.narrative,
+      narrativeSource: narrative.source,
       nextActionsJson: JSON.stringify(narrative.nextActions),
       watermark: limits.watermark,
     },
