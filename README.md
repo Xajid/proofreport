@@ -39,17 +39,19 @@ Copy `.env.example` → `.env`:
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `DATABASE_URL` | Yes | SQLite `file:./dev.db` or Postgres URL |
+| `DATABASE_URL` | Yes | Postgres URL. Login cannot create a session against a SQLite file |
 | `NEXTAUTH_URL` | Yes | e.g. `http://localhost:3000` |
 | `NEXTAUTH_SECRET` | Yes | Session secret |
-| `OPENAI_API_KEY` | No | AI narrative; else deterministic template |
+| `NVIDIA_API_KEY` | No | Nemotron for the narrative and live mention checks. Preferred over OpenAI when both keys are set |
+| `OPENAI_API_KEY` | No | Narrative and mention checks when NVIDIA is unset. `AI_PROVIDER=openai` forces it |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | No | Real GA4/GSC adapter hook; else mock metrics |
-| `STRIPE_SECRET_KEY` + price IDs | No | Live Stripe Checkout; else mock redirect |
+| `DODO_PAYMENTS_API_KEY` + product IDs | No | Dodo checkout. Without it, checkout simulates a plan change |
+| `CRON_SECRET` | Yes for cron | Vercel Cron calls `GET /api/cron/generate` with this bearer token. The job drafts reports; it does not email them |
 
 ## Architecture
 
 - **Next.js App Router** + TypeScript + Tailwind
-- **Prisma** + SQLite (switch to Postgres via `DATABASE_URL`)
+- **Prisma** + Postgres
 - Providers: `MetricsProvider`, `NarrativeProvider`, `PdfRenderer`
 - Auth: NextAuth credentials (email/password)
 - Google OAuth is for **data connectors**, separate from login

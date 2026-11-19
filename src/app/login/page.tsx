@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,11 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const { status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated") window.location.replace("/app");
+  }, [status]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Figtree, Sora, JetBrains_Mono } from "next/font/google";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -30,7 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body className={`${figtree.variable} ${sora.variable} ${jetbrains.variable} antialiased`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

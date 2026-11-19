@@ -22,5 +22,6 @@ declare module "next-auth/jwt" {
     userId?: string;
     orgId?: string;
     orgName?: string;
+    sessionStarted?: number;
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSession, SessionProvider } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
@@ -259,10 +259,8 @@ function PricingInner() {
 
 export default function PricingPage() {
   return (
-    <SessionProvider>
-      <Suspense>
-        <PricingInner />
-      </Suspense>
-    </SessionProvider>
+    <Suspense>
+      <PricingInner />
+    </Suspense>
   );
 }

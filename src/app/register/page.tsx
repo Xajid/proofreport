@@ -41,11 +41,16 @@ export default function RegisterPage() {
       setError(data.error || "Registration failed");
       return;
     }
-    await signIn("credentials", {
+    const signedIn = await signIn("credentials", {
       email: form.email,
       password: form.password,
       redirect: false,
     });
+    if (signedIn?.error || !signedIn?.ok) {
+      setLoading(false);
+      setError("Account created. Sign-in did not start a session, so use the login page.");
+      return;
+    }
     window.location.href = "/app";
   }
 

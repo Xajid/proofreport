@@ -1,10 +1,27 @@
 import type { NextAuthOptions } from "next-auth";
+import { encode } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "./prisma";
 
+const SESSION_MAX_AGE = 24 * 60 * 60;
+
+function sessionStartedAt(token: { sessionStarted?: number; iat?: number }) {
+  if (typeof token.sessionStarted === "number") return token.sessionStarted;
+  if (typeof token.iat === "number") return token.iat;
+  return Math.floor(Date.now() / 1000);
+}
+
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: SESSION_MAX_AGE, updateAge: SESSION_MAX_AGE },
+  jwt: {
+    maxAge: SESSION_MAX_AGE,
+    async encode(params) {
+      const started = sessionStartedAt(params.token ?? {});
+      const remaining = SESSION_MAX_AGE - (Math.floor(Date.now() / 1000) - started);
+      return encode({ ...params, maxAge: Math.max(remaining, 0) });
+    },
+  },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/login",
@@ -43,6 +60,12 @@ export const authOptions: NextAuthOptions = {
         token.userId = u.id;
         token.orgId = u.orgId;
         token.orgName = u.orgName;
+        token.sessionStarted = Math.floor(Date.now() / 1000);
+      }
+      const started = sessionStartedAt(token);
+      token.sessionStarted = started;
+      if (Math.floor(Date.now() / 1000) - started >= SESSION_MAX_AGE) {
+        throw new Error("Session expired");
       }
       return token;
     },
