@@ -12,7 +12,6 @@ import {
   ChevronRight,
   Sparkles,
   Zap,
-  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
@@ -29,7 +28,6 @@ export function AppShell({
   orgName,
   plan,
   clientCount,
-  isAdmin,
   trialEndsAt,
   trialExpired,
 }: {
@@ -37,11 +35,15 @@ export function AppShell({
   orgName?: string;
   plan?: string;
   clientCount?: number;
-  isAdmin?: boolean;
   trialEndsAt?: string | null;
   trialExpired?: boolean;
 }) {
   const pathname = usePathname();
+
+  async function logOut() {
+    await signOut({ redirect: false });
+    window.location.assign("/");
+  }
 
   return (
     <div className="min-h-screen surface-app lg:grid lg:grid-cols-[240px_1fr]">
@@ -91,21 +93,6 @@ export function AppShell({
               </Link>
             );
           })}
-
-          {isAdmin && (
-            <Link
-              href="/admin"
-              className={cn(
-                "group flex items-center gap-2.5 rounded-[8px] px-3 py-2 text-[13px] font-medium transition-all duration-150 whitespace-nowrap mt-2 border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
-              )}
-            >
-              <ShieldCheck className="h-4 w-4 shrink-0 text-amber-400" />
-              <span className="flex-1">Super-Admin</span>
-              <span className="rounded bg-amber-400/20 px-1.5 py-0.2 text-[10px] font-semibold text-amber-200">
-                HQ
-              </span>
-            </Link>
-          )}
         </nav>
 
         {/* This-month tip card */}
@@ -149,7 +136,7 @@ export function AppShell({
             variant="ghost"
             size="sm"
             className="w-full justify-start gap-2 text-[13px] text-slate-500 hover:bg-white/[0.05] hover:text-slate-300"
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={logOut}
           >
             <LogOut className="h-4 w-4" />
             Sign out
@@ -167,7 +154,7 @@ export function AppShell({
             </div>
             <p className="text-sm font-semibold text-slate-900">{orgName}</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: "/" })}>
+          <Button variant="ghost" size="sm" onClick={logOut}>
             Sign out
           </Button>
         </div>

@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { checkIsAdminEmail } from "@/lib/admin";
 import { getLimits } from "@/lib/plan";
 import { AppShell } from "@/components/app-shell";
 import { Providers } from "@/components/providers";
@@ -23,7 +22,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? await prisma.client.count({ where: { orgId } })
     : 0;
 
-  const isAdmin = checkIsAdminEmail(session.user.email);
   const limits = getLimits(org?.plan, org);
 
   return (
@@ -32,7 +30,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         orgName={org?.name ?? session.user.orgName}
         plan={org?.plan ?? undefined}
         clientCount={clientCount}
-        isAdmin={isAdmin}
         trialExpired={limits.expired}
         trialEndsAt={limits.trialEndsAt ? limits.trialEndsAt.toISOString() : null}
       >

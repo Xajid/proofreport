@@ -6,6 +6,15 @@ import { prisma } from "@/lib/prisma";
 import { getDodoPaymentsClient } from "@/lib/dodopayments";
 import { apiErrorMessage } from "@/lib/utils";
 
+function checkoutOrigin(req: Request) {
+  const forwardedHost = req.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const host = forwardedHost || req.headers.get("host")?.trim();
+  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const proto = forwardedProto || (host?.startsWith("localhost") || host?.startsWith("127.0.0.1") ? "http" : "https");
+  if (host && /^[a-z0-9.-]+(?::\d+)?$/i.test(host)) return `${proto}://${host}`;
+  return process.env.NEXTAUTH_URL || "http://localhost:3000";
+}
+
 const checkoutSchema = z.object({
   plan: z.enum(["per_client", "agency"]),
   quantity: z.number().int().min(1).max(100).optional(),
@@ -26,7 +35,7 @@ export async function POST(req: Request) {
   } catch (e) {
     return NextResponse.json({ error: apiErrorMessage(e) }, { status: 400 });
   }
-  const origin = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const origin = checkoutOrigin(req);
 
   const dodo = getDodoPaymentsClient();
 
@@ -43,7 +52,7 @@ export async function POST(req: Request) {
       mode: "mock",
       message: "Dodo Payments not configured in .env — simulated mock checkout success",
       plan,
-      redirectUrl: `${origin}/app/settings?checkout=mock_success&plan=${plan}`,
+      redirectUrl: `${origin}/app/settings?checkout=mock_success&plan=${encodeURIComponent(plan)}`,
     });
   }
 
@@ -71,7 +80,7 @@ export async function POST(req: Request) {
         plan,
         quantity: String(quantity),
       },
-      return_url: `${origin}/app/settings?checkout=success&plan=${plan}`,
+      return_url: `${origin}/checkout/return?checkout=success&plan=${encodeURIComponent(plan)}`,
     });
 
     if (!checkoutSession.checkout_url) {
