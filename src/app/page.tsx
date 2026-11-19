@@ -74,7 +74,7 @@ export default function LandingPage() {
             A PDF that answers what you did
           </h2>
           <p className="mt-3 text-slate-500 text-[15px]">
-            Dashboards show charts. This report puts the work log next to the period's GA4 and Search Console numbers, and it says when that link is only correlation.
+            Dashboards show charts. This report puts the work log next to the GA4 and Search Console numbers for the period, and it says when that link is only correlation.
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
