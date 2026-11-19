@@ -15,7 +15,7 @@ export default async function NewClientPage() {
   const limits = getLimits(org?.plan, org);
 
   if (clientCount >= limits.maxClients) {
-    redirect("/app/clients");
+    redirect("/pricing?upgrade=clients");
   }
 
   return <NewClientForm canUseAiMentions={limits.aiMentions} />;

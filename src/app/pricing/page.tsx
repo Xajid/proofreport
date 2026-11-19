@@ -16,6 +16,7 @@ function PricingInner() {
   const [clientQuantity, setClientQuantity] = useState(1);
 
   const cancelled = search.get("checkout") === "cancel";
+  const needsAnotherClient = search.get("upgrade") === "clients";
 
   async function checkout(plan: "per_client" | "agency") {
     if (!session) {
@@ -179,6 +180,15 @@ function PricingInner() {
         </div>
 
         {/* Cancel notice */}
+        {needsAnotherClient && (
+          <div className="mb-8 flex items-start gap-3 rounded-[10px] border border-teal-200 bg-teal-50 px-5 py-3.5 text-sm text-teal-900 animate-scale-in">
+            <Zap className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>
+              The free plan includes one client. Choose Per Client or Agency below to add another.
+            </p>
+          </div>
+        )}
+
         {cancelled && (
           <div className="mb-8 flex items-center gap-3 rounded-[10px] border border-amber-200 bg-amber-50 px-5 py-3.5 text-sm text-amber-800 animate-scale-in">
             <AlertCircle className="h-4 w-4 shrink-0" />

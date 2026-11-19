@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Plus, Users, Zap } from "lucide-react";
 import { ClientsTable } from "./clients-table";
+import { getLimits } from "@/lib/plan";
 
 export default async function ClientsPage() {
   const session = await getServerSession(authOptions);
@@ -19,10 +20,15 @@ export default async function ClientsPage() {
       },
       orderBy: { name: "asc" },
     }),
-    prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true } }),
+    prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { plan: true, trialEndsAt: true, createdAt: true, clientSlots: true },
+    }),
   ]);
 
   const clientCount = clients.length;
+  const atClientLimit = clientCount >= getLimits(org?.plan, org).maxClients;
+  const addClientHref = atClientLimit ? "/pricing?upgrade=clients" : "/app/clients/new";
 
   const rows = clients.map((c) => ({
     id: c.id,
@@ -49,10 +55,10 @@ export default async function ClientsPage() {
           </h1>
           <p className="mt-1 text-sm text-slate-500">Domains you report on each month.</p>
         </div>
-        <Link href="/app/clients/new">
-          <Button size="sm" disabled={org?.plan === "trial" && clientCount >= 1}>
+        <Link href={addClientHref}>
+          <Button size="sm">
             <Plus className="h-4 w-4" />
-            Add client
+            {atClientLimit ? "Add client — see plans" : "Add client"}
           </Button>
         </Link>
       </div>
