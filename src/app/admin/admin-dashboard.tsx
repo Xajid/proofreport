@@ -9,6 +9,7 @@ import {
   Search,
   CheckCircle2,
 } from "lucide-react";
+import type { PlatformIntegration } from "@/lib/platform-env";
 
 export type AdminOrg = {
   id: string;
@@ -36,9 +37,11 @@ export type AdminSummary = {
 export function AdminDashboard({
   initialOrgs,
   initialSummary,
+  integrations,
 }: {
   initialOrgs: AdminOrg[];
   initialSummary: AdminSummary;
+  integrations: PlatformIntegration[];
 }) {
   const [orgs, setOrgs] = useState<AdminOrg[]>(initialOrgs);
   const [query, setQuery] = useState("");
@@ -159,6 +162,29 @@ export function AdminDashboard({
             <p className="mt-1 text-xs text-slate-400">{s.sub}</p>
           </div>
         ))}
+      </div>
+
+      <div className="rounded-[14px] border border-white/10 bg-[#0e1422] p-5">
+        <h2 className="text-base font-semibold text-white">Platform keys</h2>
+        <p className="mt-1 text-xs text-slate-400">
+          Model and provider status for this deployment. Secret values stay on the server.
+        </p>
+        <ul className="mt-4 divide-y divide-white/10">
+          {integrations.map((item) => (
+            <li key={item.id} className="flex flex-wrap items-start justify-between gap-3 py-3">
+              <div>
+                <p className="text-sm font-medium text-white">{item.label}</p>
+                <p className="mt-0.5 text-xs text-slate-400">{item.detail}</p>
+              </div>
+              <div className="text-right">
+                <p className={`text-xs font-semibold ${item.configured ? "text-emerald-300" : "text-amber-300"}`}>
+                  {item.configured ? "Configured" : "Missing"}
+                </p>
+                <p className="mt-0.5 font-mono text-[11px] text-slate-500">{item.envName}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* Agency Directory Section */}

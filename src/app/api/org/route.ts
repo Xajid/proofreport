@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { orgBrandingSchema } from "@/lib/validators";
 import { apiErrorMessage } from "@/lib/utils";
+import { envConfigured } from "@/lib/platform-env";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -12,11 +13,9 @@ export async function GET() {
   return NextResponse.json({
     ...org,
     integrationStatus: {
-      nvidia: Boolean(process.env.NVIDIA_API_KEY),
-      openai: Boolean(process.env.OPENAI_API_KEY),
-      google: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-      dodo: Boolean(process.env.DODO_PAYMENTS_API_KEY),
-      resend: Boolean(process.env.RESEND_API_KEY),
+      google: envConfigured("GOOGLE_CLIENT_ID") && envConfigured("GOOGLE_CLIENT_SECRET"),
+      dodo: envConfigured("DODO_PAYMENTS_API_KEY"),
+      resend: envConfigured("RESEND_API_KEY"),
     },
   });
 }

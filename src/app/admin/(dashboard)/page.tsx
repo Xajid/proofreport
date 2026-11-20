@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { checkIsAdminEmail } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { AdminDashboard, type AdminOrg, type AdminSummary } from "../admin-dashboard";
+import { platformIntegrations } from "@/lib/platform-env";
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions);
@@ -76,6 +77,6 @@ export default async function AdminPage() {
     estimatedMrr: perClientCount * 49 + agencyCount * 199,
   };
 
-  return <AdminDashboard initialOrgs={rows} initialSummary={summary} />;
+  return <AdminDashboard initialOrgs={rows} initialSummary={summary} integrations={platformIntegrations()} />;
 }
 

@@ -970,7 +970,7 @@ export function ClientDetail({
                   AI mentions
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Asks Nemotron when NVIDIA_API_KEY is set. Live rows store the prompt, model, time, and URLs from the answer.
+                  A live check stores the prompt, the model, the time, and any URLs written in the answer.
                 </p>
               </div>
               {!limits.aiMentions ? (

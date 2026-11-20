@@ -74,7 +74,7 @@ export async function PUT(req: Request) {
   const chatConfig = resolveChatProvider();
   if (!chatConfig) {
     return NextResponse.json(
-      { error: "Set NVIDIA_API_KEY to run checks on Nemotron, or OPENAI_API_KEY for OpenAI." },
+      { error: "Live checks are not available right now." },
       { status: 400 }
     );
   }

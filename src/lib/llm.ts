@@ -19,20 +19,24 @@ const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
 export function resolveChatProvider(
   env: Record<string, string | undefined> = process.env
 ): ChatConfig | null {
-  const forced = env.AI_PROVIDER?.trim().toLowerCase();
-  const nvidiaKey = env.NVIDIA_API_KEY?.trim();
-  const openaiKey = env.OPENAI_API_KEY?.trim();
+  const read = (name: string) => {
+    const value = env[name] ?? process.env[name];
+    return typeof value === "string" ? value.trim() : "";
+  };
+  const forced = read("AI_PROVIDER").toLowerCase();
+  const nvidiaKey = read("NVIDIA_API_KEY");
+  const openaiKey = read("OPENAI_API_KEY");
 
   const nvidia = (): ChatConfig => ({
     id: "nvidia",
     apiKey: nvidiaKey || "",
-    model: env.NVIDIA_MODEL?.trim() || DEFAULT_NVIDIA_MODEL,
+    model: read("NVIDIA_MODEL") || DEFAULT_NVIDIA_MODEL,
     url: NVIDIA_URL,
   });
   const openai = (): ChatConfig => ({
     id: "openai",
     apiKey: openaiKey || "",
-    model: env.OPENAI_MODEL?.trim() || DEFAULT_OPENAI_MODEL,
+    model: read("OPENAI_MODEL") || DEFAULT_OPENAI_MODEL,
     url: OPENAI_URL,
   });
 

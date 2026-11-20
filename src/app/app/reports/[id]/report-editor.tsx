@@ -214,11 +214,7 @@ export function ReportEditor({ report: initial }: { report: Report }) {
             )}
             {report.narrativeSource && (
               <Badge tone="neutral">
-                {report.narrativeSource === "nvidia"
-                  ? "Nemotron draft"
-                  : report.narrativeSource === "openai"
-                    ? "OpenAI draft"
-                    : "Template draft"}
+                {report.narrativeSource === "template" ? "Template draft" : "Model draft"}
               </Badge>
             )}
             {report.watermark && <Badge tone="warning">watermarked</Badge>}

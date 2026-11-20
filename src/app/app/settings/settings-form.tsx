@@ -10,8 +10,6 @@ import { Badge } from "@/components/ui/card";
 import { Paintbrush, Calendar, Key, Zap, CreditCard, Mail } from "lucide-react";
 
 type IntegrationStatus = {
-  nvidia: boolean;
-  openai: boolean;
   google: boolean;
   dodo: boolean;
   resend: boolean;
@@ -25,22 +23,6 @@ const INTEGRATIONS: {
   icon: typeof Zap;
   color: string;
 }[] = [
-  {
-    id: "nvidia",
-    label: "NVIDIA Nemotron",
-    key: "NVIDIA_API_KEY",
-    description: "Default model for narratives and mention checks. Used first so OpenAI tokens are not spent.",
-    icon: Zap,
-    color: "text-lime-700 bg-lime-50 border-lime-100",
-  },
-  {
-    id: "openai",
-    label: "OpenAI narrative",
-    key: "OPENAI_API_KEY",
-    description: "Used only when NVIDIA_API_KEY is unset, or when AI_PROVIDER=openai",
-    icon: Zap,
-    color: "text-violet-600 bg-violet-50 border-violet-100",
-  },
   {
     id: "google",
     label: "Google GA4 / GSC",
@@ -78,8 +60,6 @@ export function SettingsForm() {
   });
   const [plan, setPlan] = useState("trial");
   const [status, setStatus] = useState<IntegrationStatus>({
-    nvidia: false,
-    openai: false,
     google: false,
     dodo: false,
     resend: false,
@@ -307,7 +287,7 @@ export function SettingsForm() {
       <div className="rounded-[var(--radius)] border border-slate-200/80 bg-white shadow-[var(--shadow-sm)] overflow-hidden">
         <div className="border-b border-slate-100 px-5 py-3.5">
           <h2 className="text-sm font-semibold text-slate-900">Integrations</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Live environment status on this server.</p>
+          <p className="text-xs text-slate-500 mt-0.5">What this workspace can connect.</p>
         </div>
         <ul className="divide-y divide-slate-100">
           {INTEGRATIONS.map((item) => {
@@ -327,9 +307,6 @@ export function SettingsForm() {
                   </div>
                   <p className="text-xs text-slate-500">{item.description}</p>
                 </div>
-                <code className="hidden sm:inline-flex shrink-0 rounded-md bg-slate-100 border border-slate-200 px-2 py-1 font-mono text-[11px] text-slate-600">
-                  {item.key}
-                </code>
               </li>
             );
           })}
