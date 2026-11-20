@@ -15,7 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { periodLabel } from "@/lib/utils";
-import { getLimits } from "@/lib/plan";
+import { clientSlotsUsed, getLimits } from "@/lib/plan";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -39,7 +39,9 @@ export default async function DashboardPage() {
 
   const readyCount = reports.filter((r) => r.status === "ready" || r.status === "sent").length;
   const addClientHref =
-    clientCount >= getLimits(org?.plan, org).maxClients ? "/pricing?upgrade=clients" : "/app/clients/new";
+    clientSlotsUsed(org?.plan, clientCount, org?.clientsCreated ?? 0) >= getLimits(org?.plan, org).maxClients
+      ? "/pricing?upgrade=clients"
+      : "/app/clients/new";
 
   const stats = [
     {

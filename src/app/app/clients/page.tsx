@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Plus, Users, Zap } from "lucide-react";
 import { ClientsTable } from "./clients-table";
-import { getLimits } from "@/lib/plan";
+import { clientSlotsUsed, getLimits, holdsClientSlot } from "@/lib/plan";
 
 export default async function ClientsPage() {
   const session = await getServerSession(authOptions);
@@ -22,12 +22,12 @@ export default async function ClientsPage() {
     }),
     prisma.organization.findUnique({
       where: { id: orgId },
-      select: { plan: true, trialEndsAt: true, createdAt: true, clientSlots: true },
+      select: { plan: true, trialEndsAt: true, createdAt: true, clientSlots: true, clientsCreated: true },
     }),
   ]);
 
-  const clientCount = clients.length;
-  const atClientLimit = clientCount >= getLimits(org?.plan, org).maxClients;
+  const slotsUsed = clientSlotsUsed(org?.plan, clients.length, org?.clientsCreated ?? 0);
+  const atClientLimit = slotsUsed >= getLimits(org?.plan, org).maxClients;
   const addClientHref = atClientLimit ? "/pricing?upgrade=clients" : "/app/clients/new";
 
   const rows = clients.map((c) => ({
@@ -63,13 +63,13 @@ export default async function ClientsPage() {
         </Link>
       </div>
 
-      {org?.plan === "trial" && clientCount >= 1 && (
+      {holdsClientSlot(org?.plan) && slotsUsed >= 1 && (
         <div className="rounded-[var(--radius)] border border-amber-200/80 bg-amber-50/80 px-5 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Zap className="h-5 w-5 text-amber-600 shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-amber-900">Trial limit reached</p>
-              <p className="text-sm text-amber-700 mt-0.5">Your trial allows 1 client. Upgrade to add your full roster.</p>
+              <p className="text-sm font-semibold text-amber-900">Free client already used</p>
+              <p className="text-sm text-amber-700 mt-0.5">The free plan includes one client. Deleting that client does not open another slot.</p>
             </div>
           </div>
           <Link href="/pricing">

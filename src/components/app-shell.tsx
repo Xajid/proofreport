@@ -118,7 +118,7 @@ export function AppShell({
             </div>
             <p className="text-[12px] leading-relaxed text-slate-400 mb-3">
               {clientCount !== undefined && clientCount >= 1
-                ? "Client limit reached. Upgrade to add more."
+                ? "Free client already used. Deleting it does not open another slot."
                 : `${1 - (clientCount ?? 0)} client slot remaining.`}
             </p>
             <a

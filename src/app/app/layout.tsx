@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getLimits } from "@/lib/plan";
+import { clientSlotsUsed, getLimits } from "@/lib/plan";
 import { AppShell } from "@/components/app-shell";
 import { Providers } from "@/components/providers";
 
@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const org = session.user.orgId
     ? await prisma.organization.findUnique({
         where: { id: session.user.orgId },
-        select: { name: true, plan: true, trialEndsAt: true, createdAt: true, clientSlots: true },
+        select: { name: true, plan: true, trialEndsAt: true, createdAt: true, clientSlots: true, clientsCreated: true },
       })
     : null;
 
@@ -29,7 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <AppShell
         orgName={org?.name ?? session.user.orgName}
         plan={org?.plan ?? undefined}
-        clientCount={clientCount}
+        clientCount={clientSlotsUsed(org?.plan, clientCount, org?.clientsCreated ?? 0)}
         trialExpired={limits.expired}
         trialEndsAt={limits.trialEndsAt ? limits.trialEndsAt.toISOString() : null}
       >

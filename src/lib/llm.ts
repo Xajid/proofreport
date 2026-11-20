@@ -91,6 +91,10 @@ export async function completeChat(opts: {
   if (config.id === "openai") {
     body.response_format = { type: "json_object" };
   }
+  if (config.id === "nvidia") {
+    // Thinking models otherwise spend the token budget on reasoning and leave content empty.
+    body.chat_template_kwargs = { enable_thinking: false };
+  }
 
   const res = await fetch(config.url, {
     method: "POST",
@@ -105,7 +109,7 @@ export async function completeChat(opts: {
 
   const data = (await res.json()) as { choices?: { message?: ChatMessage }[] };
   const message = data.choices?.[0]?.message;
-  const content = [message?.content, message?.reasoning_content].filter(Boolean).join("\n").trim();
+  const content = (message?.content || "").trim();
   if (!content) return null;
   return { provider: config.id, model: config.model, content };
 }

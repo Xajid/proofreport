@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/card";
 import { ToastPills } from "@/components/toast-pills";
 import { formatNumber, periodLabel } from "@/lib/utils";
-import { getLimits } from "@/lib/plan";
+import { getLimits, holdsClientSlot } from "@/lib/plan";
 import type { MetricsSnapshot } from "@/types/metrics";
 import {
   ArrowLeft,
@@ -82,6 +82,7 @@ type Client = {
   domain: string;
   contactEmail: string | null;
   aiMentionsEnabled: boolean;
+  domainLocked?: boolean;
   connections: Connection[];
   workLogs: WorkLog[];
   reportRuns: ReportRun[];
@@ -127,6 +128,7 @@ export function ClientDetail({
   }, []);
 
   const [client, setClient] = useState(initial);
+  const domainLocked = holdsClientSlot(plan) && (client.domainLocked || client.reportRuns.length > 0);
   const [periodStart, setPeriodStart] = useState(monthOptions[1]?.start ?? monthOptions[0].start);
   const [periodEnd, setPeriodEnd] = useState(monthOptions[1]?.end ?? monthOptions[0].end);
   const [customDates, setCustomDates] = useState(false);
@@ -347,7 +349,10 @@ export function ClientDetail({
   }
 
   async function deleteClient() {
-    if (!window.confirm(`Delete ${client.name} and all its reports and work logs?`)) return;
+    const slotNote = holdsClientSlot(plan)
+      ? " This uses your free client. You cannot add another until you upgrade."
+      : "";
+    if (!window.confirm(`Delete ${client.name} and all its reports and work logs?${slotNote}`)) return;
     setBusy("delete-client");
     const res = await fetch(`/api/clients/${client.id}`, { method: "DELETE" });
     if (res.ok) {
@@ -502,7 +507,13 @@ export function ClientDetail({
                 value={clientForm.domain}
                 onChange={(e) => setClientForm({ ...clientForm, domain: e.target.value })}
                 required
+                disabled={domainLocked}
               />
+              {domainLocked && (
+                <p className="text-xs text-slate-500">
+                  This free client stays on this domain. Upgrade to report on another business.
+                </p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>Contact email</Label>

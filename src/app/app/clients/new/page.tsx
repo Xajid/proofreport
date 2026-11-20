@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getLimits } from "@/lib/plan";
+import { clientSlotsUsed, getLimits } from "@/lib/plan";
 import NewClientForm from "./new-client-form";
 
 export default async function NewClientPage() {
@@ -13,8 +13,9 @@ export default async function NewClientPage() {
   const org = await prisma.organization.findUnique({ where: { id: orgId } });
   const clientCount = await prisma.client.count({ where: { orgId } });
   const limits = getLimits(org?.plan, org);
+  const slotsUsed = clientSlotsUsed(org?.plan, clientCount, org?.clientsCreated ?? 0);
 
-  if (clientCount >= limits.maxClients) {
+  if (slotsUsed >= limits.maxClients) {
     redirect("/pricing?upgrade=clients");
   }
 

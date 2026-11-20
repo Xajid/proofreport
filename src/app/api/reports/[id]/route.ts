@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { reportUpdateSchema } from "@/lib/validators";
 import { apiErrorMessage } from "@/lib/utils";
+import { holdsClientSlot } from "@/lib/plan";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -56,9 +57,15 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   const { id } = await params;
   const existing = await prisma.reportRun.findFirst({
     where: { id, client: { orgId: session.user.orgId } },
+    include: { client: { include: { org: { select: { plan: true } } } } },
   });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await prisma.reportRun.delete({ where: { id } });
+  await prisma.$transaction(async (tx) => {
+    if (holdsClientSlot(existing.client.org.plan)) {
+      await tx.client.update({ where: { id: existing.clientId }, data: { domainLocked: true } });
+    }
+    await tx.reportRun.delete({ where: { id } });
+  });
   return NextResponse.json({ ok: true });
 }

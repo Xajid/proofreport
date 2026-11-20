@@ -5,7 +5,7 @@ import { clientSchema, orgBrandingSchema, registerSchema, reportUpdateSchema } f
 import { apiErrorMessage, formatNumber, formatPct, parsePeriodDate, periodLabel, previousPeriod } from "../src/lib/utils";
 import { createMockMetrics } from "../src/providers/metrics/mock";
 import { generateTemplateNarrative } from "../src/providers/narrative/template";
-import { getLimits } from "../src/lib/plan";
+import { clientSlotsUsed, getLimits, holdsClientSlot } from "../src/lib/plan";
 import { extractJsonObject, resolveChatProvider, urlsInText } from "../src/lib/llm";
 
 test("validators reject invalid inputs and accept valid ones", () => {
@@ -104,6 +104,12 @@ test("plan limits enforce strict constraints per tier and fallback securely", ()
   const expired = getLimits("trial", { plan: "trial", trialEndsAt: new Date("2000-01-01") });
   assert.equal(expired.expired, true);
   assert.equal(expired.maxClients, 0);
+
+  assert.equal(holdsClientSlot("trial"), true);
+  assert.equal(holdsClientSlot("per_client"), false);
+  assert.equal(clientSlotsUsed("trial", 0, 1), 1);
+  assert.equal(clientSlotsUsed("per_client", 0, 4), 0);
+  assert.equal(clientSlotsUsed("agency", 3, 9), 3);
 });
 
 test("chat provider prefers Nemotron and only keeps URLs that were written", () => {

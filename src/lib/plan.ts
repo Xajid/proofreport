@@ -70,3 +70,17 @@ export function getLimits(plan: string | null | undefined, org?: BillingOrg | nu
 export function trialEndedMessage(): string {
   return "Your 14-day trial has ended. Upgrade to keep generating and sending reports.";
 }
+
+/** Paid plans bill concurrent clients. The free plan keeps a slot after the client is deleted. */
+export function holdsClientSlot(plan: string | null | undefined): boolean {
+  return plan !== "per_client" && plan !== "agency";
+}
+
+export function clientSlotsUsed(
+  plan: string | null | undefined,
+  liveCount: number,
+  clientsCreated = 0
+): number {
+  if (!holdsClientSlot(plan)) return liveCount;
+  return Math.max(liveCount, clientsCreated);
+}

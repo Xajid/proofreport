@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { reportCreateSchema } from "@/lib/validators";
 import { apiErrorMessage, parsePeriodDate } from "@/lib/utils";
-import { getLimits, trialEndedMessage } from "@/lib/plan";
+import { getLimits, holdsClientSlot, trialEndedMessage } from "@/lib/plan";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -35,15 +35,21 @@ export async function POST(req: Request) {
     });
     if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    const report = await prisma.reportRun.create({
-      data: {
-        clientId: data.clientId,
-        periodStart: parsePeriodDate(data.periodStart),
-        periodEnd: parsePeriodDate(data.periodEnd),
-        status: "draft",
-        isSample: data.isSample ?? false,
-        watermark: data.isSample ?? false,
-      },
+    const report = await prisma.$transaction(async (tx) => {
+      const created = await tx.reportRun.create({
+        data: {
+          clientId: data.clientId,
+          periodStart: parsePeriodDate(data.periodStart),
+          periodEnd: parsePeriodDate(data.periodEnd),
+          status: "draft",
+          isSample: data.isSample ?? false,
+          watermark: data.isSample ?? false,
+        },
+      });
+      if (holdsClientSlot(org?.plan)) {
+        await tx.client.update({ where: { id: client.id }, data: { domainLocked: true } });
+      }
+      return created;
     });
     return NextResponse.json(report);
   } catch (e) {

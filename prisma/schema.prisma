@@ -30,6 +30,8 @@ model Organization {
   stripeCustomerId String?
   trialEndsAt  DateTime?
   clientSlots  Int      @default(1)
+  // Trial slots are consumed for good. Deleting a client does not lower this.
+  clientsCreated Int    @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   members      OrgMember[]
@@ -55,6 +57,8 @@ model Client {
   domain           String
   contactEmail     String?
   aiMentionsEnabled Boolean @default(false)
+  // Set on the free plan once a report exists, so the domain cannot be swapped for another business.
+  domainLocked     Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   org              Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)

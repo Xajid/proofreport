@@ -4,7 +4,11 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { clientSchema } from "@/lib/validators";
 import { apiErrorMessage } from "@/lib/utils";
-import { getLimits } from "@/lib/plan";
+import { getLimits, holdsClientSlot } from "@/lib/plan";
+
+function normalizeDomain(domain: string) {
+  return domain.replace(/^https?:\/\//, "").replace(/\/$/, "").trim().toLowerCase();
+}
 
 async function assertClient(orgId: string, id: string) {
   return prisma.client.findFirst({
@@ -48,6 +52,25 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
   try {
     const data = clientSchema.partial().parse(await req.json());
+    if (data.domain && normalizeDomain(data.domain) !== normalizeDomain(existing.domain)) {
+      const org = await prisma.organization.findUnique({
+        where: { id: session.user.orgId },
+        select: { plan: true },
+      });
+      const reportCount = existing.reportRuns.length;
+      if (holdsClientSlot(org?.plan) && (existing.domainLocked || reportCount > 0)) {
+        if (!existing.domainLocked) {
+          await prisma.client.update({ where: { id }, data: { domainLocked: true } });
+        }
+        return NextResponse.json(
+          {
+            error: "This free client is already tied to its domain. Upgrade to report on another business.",
+            code: "PLAN_LIMIT",
+          },
+          { status: 403 }
+        );
+      }
+    }
     if (data.aiMentionsEnabled) {
       const org = await prisma.organization.findUnique({
         where: { id: session.user.orgId },
@@ -69,9 +92,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       where: { id },
       data: {
         ...(data.name ? { name: data.name } : {}),
-        ...(data.domain
-          ? { domain: data.domain.replace(/^https?:\/\//, "").replace(/\/$/, "") }
-          : {}),
+        ...(data.domain ? { domain: data.domain.replace(/^https?:\/\//, "").replace(/\/$/, "") } : {}),
         ...(data.contactEmail !== undefined ? { contactEmail: data.contactEmail || null } : {}),
         ...(data.aiMentionsEnabled !== undefined
           ? { aiMentionsEnabled: data.aiMentionsEnabled }
@@ -90,6 +111,21 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   const { id } = await params;
   const existing = await assertClient(session.user.orgId, id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  await prisma.client.delete({ where: { id } });
+  const orgId = session.user.orgId;
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "Organization" WHERE id = ${orgId} FOR UPDATE`;
+    const org = await tx.organization.findUnique({
+      where: { id: orgId },
+      select: { plan: true, clientsCreated: true },
+    });
+    if (holdsClientSlot(org?.plan)) {
+      const liveCount = await tx.client.count({ where: { orgId } });
+      const consumed = Math.max(org?.clientsCreated ?? 0, liveCount);
+      if (consumed !== (org?.clientsCreated ?? 0)) {
+        await tx.organization.update({ where: { id: orgId }, data: { clientsCreated: consumed } });
+      }
+    }
+    await tx.client.delete({ where: { id } });
+  });
   return NextResponse.json({ ok: true });
 }
