@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { LandingHeroInteractive } from "@/components/landing-hero-interactive";
 import { HowItWorksInteractive } from "@/components/how-it-works-interactive";
@@ -102,9 +103,15 @@ export default function LandingPage() {
       <footer className="border-t border-slate-200/80 bg-white/70 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-10 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <BrandLogo href="/" size="sm" />
-          <p className="text-xs">
-            Client reporting for SEO agencies — fast, branded, and provable.
-          </p>
+          <p className="text-xs">Client reporting for SEO agencies — fast, branded, and provable.</p>
+          <nav aria-label="Legal" className="flex gap-4 text-xs">
+            <Link href="/privacy" className="font-medium text-slate-600 hover:text-slate-950">
+              Privacy
+            </Link>
+            <Link href="/terms" className="font-medium text-slate-600 hover:text-slate-950">
+              Terms
+            </Link>
+          </nav>
         </div>
       </footer>
     </div>

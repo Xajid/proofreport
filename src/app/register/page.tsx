@@ -152,7 +152,15 @@ export default function RegisterPage() {
             </Button>
 
             <p className="text-center text-xs text-slate-500">
-              By creating an account you agree to our Terms of Service.
+              By creating an account you agree to the{" "}
+              <Link href="/terms" className="font-medium text-teal-800 underline">
+                Terms
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="font-medium text-teal-800 underline">
+                Privacy policy
+              </Link>
+              .
             </p>
           </form>
 
