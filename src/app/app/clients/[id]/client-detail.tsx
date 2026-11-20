@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/card";
+import { ToastPills } from "@/components/toast-pills";
 import { formatNumber, periodLabel } from "@/lib/utils";
 import { getLimits } from "@/lib/plan";
 import type { MetricsSnapshot } from "@/types/metrics";
@@ -468,12 +469,7 @@ export function ClientDetail({
         </div>
       </div>
 
-      {/* Toast */}
-      {message && (
-        <div className="toast-info rounded-[9px] px-4 py-3 text-sm font-medium animate-scale-in">
-          {message}
-        </div>
-      )}
+      <ToastPills message={message} onDone={() => setMessage("")} />
 
       {/* ── Edit Client Settings Drawer ── */}
       {settingsOpen && (

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/card";
 import { Paintbrush, Calendar, Key, Zap, CreditCard, Mail } from "lucide-react";
+import { ToastPills } from "@/components/toast-pills";
 
 type IntegrationStatus = {
   google: boolean;
@@ -141,21 +142,7 @@ export function SettingsForm() {
         </div>
       </div>
 
-      {msg && (
-        <div
-          className={`rounded-[9px] px-4 py-3 text-sm font-medium animate-scale-in ${
-            msg.includes("✓") || msg.includes("successfully") || msg.includes("Payment confirmed") || msg.includes("🎉")
-              ? "toast-success"
-              : msg.includes("failed") || msg.includes("Invalid")
-              ? "border border-red-200 bg-red-50 text-red-700"
-              : msg.includes("cancelled")
-              ? "border border-amber-200 bg-amber-50 text-amber-800"
-              : "toast-info"
-          }`}
-        >
-          {msg}
-        </div>
-      )}
+      <ToastPills message={msg} onDone={() => setMsg("")} />
 
       <div className="rounded-[var(--radius)] border border-slate-200/80 bg-white shadow-[var(--shadow-sm)] overflow-hidden">
         <div className="border-b border-slate-100 px-5 py-3.5">

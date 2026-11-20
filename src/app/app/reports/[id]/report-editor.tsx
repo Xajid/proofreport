@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/card";
+import { ToastPills } from "@/components/toast-pills";
 import { formatNumber, formatPct, periodLabel } from "@/lib/utils";
 import type { MetricsSnapshot } from "@/types/metrics";
 import {
@@ -107,7 +108,7 @@ export function ReportEditor({ report: initial }: { report: Report }) {
     setNarrative(data.narrative || "");
     setActions(data.nextActionsJson ? JSON.parse(data.nextActionsJson) : ["", "", ""]);
     setPreviewKey((k) => k + 1);
-    setMsg(`Generated via ${data.narrativeSource || "template"} ✓`);
+    setMsg(`Report generated`);
   }
 
   async function copyShareLink() {
@@ -278,18 +279,7 @@ export function ReportEditor({ report: initial }: { report: Report }) {
         </div>
       </div>
 
-      {/* Toast */}
-      {msg && (
-        <div
-          className={`rounded-[9px] px-4 py-3 text-sm font-medium animate-scale-in ${
-            msg.includes("✓") || msg.includes("Generated")
-              ? "toast-success"
-              : "toast-warning"
-          }`}
-        >
-          {msg}
-        </div>
-      )}
+      <ToastPills message={msg} onDone={() => setMsg("")} />
 
       {/* Send to client drawer */}
       {sendOpen && (
