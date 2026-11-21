@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
-import { BrandLogo } from "@/components/brand-logo";
+import { SiteFooter } from "@/components/site-footer";
 
 export function LegalPage({
   title,
@@ -19,19 +18,7 @@ export function LegalPage({
         <p className="mt-3 text-sm text-slate-500">Last updated 20 November 2026</p>
         <article className="mt-10 space-y-8 text-[15px] leading-7 text-slate-700">{children}</article>
       </main>
-      <footer className="border-t border-slate-200/80 bg-white/70">
-        <div className="mx-auto flex max-w-3xl flex-col gap-3 px-6 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <BrandLogo href="/" size="sm" />
-          <nav aria-label="Legal" className="flex gap-4">
-            <Link href="/privacy" className="hover:text-slate-900">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-slate-900">
-              Terms
-            </Link>
-          </nav>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

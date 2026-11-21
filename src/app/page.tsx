@@ -1,9 +1,11 @@
-import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { LandingHeroInteractive } from "@/components/landing-hero-interactive";
 import { HowItWorksInteractive } from "@/components/how-it-works-interactive";
 import { LandingPricing } from "@/components/landing-pricing";
-import { BrandLogo } from "@/components/brand-logo";
+import { GuideIndex, SiteFooter } from "@/components/site-footer";
+import { JsonLd } from "@/components/json-ld";
+import { faqJsonLd, pageMeta, softwareApplicationJsonLd } from "@/lib/seo";
+import { PUBLIC_PAGES } from "@/lib/site-content";
 import {
   BarChart3,
   Shield,
@@ -11,6 +13,8 @@ import {
   Users,
   Clock,
 } from "lucide-react";
+
+export const metadata = pageMeta(PUBLIC_PAGES.home);
 
 const WHY_CARDS = [
   {
@@ -40,6 +44,9 @@ const STATS = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen surface-mesh">
+      <JsonLd data={softwareApplicationJsonLd()} />
+      <JsonLd data={faqJsonLd()} />
+      <main>
       <div className="hero-stage min-h-[100svh]">
         <SiteHeader />
         <LandingHeroInteractive />
@@ -51,7 +58,7 @@ export default function LandingPage() {
           <dl className="grid grid-cols-2 gap-8 md:grid-cols-4">
             {STATS.map(({ value, label, icon: Icon }) => (
               <div key={value} className="flex flex-col items-center text-center">
-                <Icon className="mb-2 h-4 w-4 text-teal-600" />
+                <Icon className="mb-2 h-4 w-4 text-teal-600" aria-hidden="true" />
                 <dt className="font-display text-2xl font-bold text-slate-900">
                   {value}
                 </dt>
@@ -69,7 +76,7 @@ export default function LandingPage() {
       <section className="mx-auto max-w-6xl px-6 py-24">
         <div className="mb-14 text-center max-w-2xl mx-auto">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-700">
-            Built strictly for SEO operators
+            For agencies and freelance SEOs
           </p>
           <h2 className="font-display mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
             A PDF that answers what you did
@@ -85,7 +92,7 @@ export default function LandingPage() {
               className="panel panel-hover rounded-[var(--radius-lg)] p-8 border-slate-200/80 bg-white"
             >
               <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-[10px] bg-teal-50 border border-teal-100/80 text-teal-700">
-                <Icon className="h-5 w-5" />
+                <Icon className="h-5 w-5" aria-hidden="true" />
               </div>
               <p className="font-display text-lg font-semibold text-slate-900">{title}</p>
               <p className="mt-2.5 text-sm leading-relaxed text-slate-500">
@@ -98,22 +105,9 @@ export default function LandingPage() {
 
       {/* ── Pricing Section with Monthly/Annual Toggle & FAQs ── */}
       <LandingPricing />
-
-      {/* ── Footer ── */}
-      <footer className="border-t border-slate-200/80 bg-white/70 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-10 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <BrandLogo href="/" size="sm" />
-          <p className="text-xs">Client reporting for SEO agencies — fast, branded, and provable.</p>
-          <nav aria-label="Legal" className="flex gap-4 text-xs">
-            <Link href="/privacy" className="font-medium text-slate-600 hover:text-slate-950">
-              Privacy
-            </Link>
-            <Link href="/terms" className="font-medium text-slate-600 hover:text-slate-950">
-              Terms
-            </Link>
-          </nav>
-        </div>
-      </footer>
+      <GuideIndex />
+      </main>
+      <SiteFooter />
     </div>
   );
 }

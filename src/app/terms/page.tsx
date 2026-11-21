@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, LegalSection } from "@/components/legal-page";
+import { pageMeta } from "@/lib/seo";
+import { PUBLIC_PAGES } from "@/lib/site-content";
 
-export const metadata: Metadata = {
-  title: "Terms of service — SearchProof",
-  description: "The terms for using SearchProof to draft and send monthly SEO client reports.",
-};
+export const metadata = pageMeta(PUBLIC_PAGES.terms);
 
 export default function TermsPage() {
   return (

@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { noIndex } from "@/lib/seo";
+
+export const metadata: Metadata = noIndex;
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";

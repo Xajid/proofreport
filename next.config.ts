@@ -13,8 +13,29 @@ const pdfFontFiles = [
   "./node_modules/.pnpm/pdfkit@*/node_modules/pdfkit/js/data/**/*",
 ];
 
+const noIndex = { key: "X-Robots-Tag", value: "noindex, nofollow" };
+
 const nextConfig: NextConfig = {
   outputFileTracingRoot: projectRoot,
+  async headers() {
+    return [
+      "/app",
+      "/app/:path*",
+      "/admin",
+      "/admin/:path*",
+      "/api/:path*",
+      "/share",
+      "/share/:path*",
+      "/checkout/:path*",
+      "/login",
+      "/register",
+      "/forgot-password",
+      "/reset-password",
+    ].map((source) => ({
+      source,
+      headers: [noIndex],
+    }));
+  },
   serverExternalPackages: ["@react-pdf/renderer", "pdfkit"],
   outputFileTracingIncludes: {
     "/api/sample": pdfFontFiles,

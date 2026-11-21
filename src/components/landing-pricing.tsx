@@ -1,27 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, Zap, ArrowRight, ShieldCheck, HelpCircle } from "lucide-react";
+import { CheckCircle2, Zap, ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const FAQS = [
-  {
-    q: "Do my clients see SearchProof branding?",
-    a: "Paid PDFs use your agency name, logo, and color. Trial reports and their share links keep a SearchProof watermark. Share links live on getsearchproof.com.",
-  },
-  {
-    q: "Do clients need to create an account?",
-    a: "No. They get the PDF by email and a view link. They do not sign in.",
-  },
-  {
-    q: "How does GA4 and Search Console connect?",
-    a: "You sign in with Google, then pick the property from the list we get back. If that pull fails, generation stops and names the source. Demo numbers are never saved as live data.",
-  },
-  {
-    q: "Can I edit the narrative before sending?",
-    a: "Yes. Generation leaves the report as a draft: shipped work, what moved, a correlation note, and three next actions. You edit those, mark it ready, then send.",
-  },
-];
+import { FaqList } from "@/components/faq-list";
+import { PER_CLIENT_MONTHLY_USD, AGENCY_MONTHLY_USD } from "@/lib/site-content";
 
 export function LandingPricing() {
   const plans = [
@@ -50,7 +33,7 @@ export function LandingPricing() {
       name: "Per Client",
       badge: "Most Popular",
       badgeTone: "bg-teal-50 text-teal-800 border-teal-200 ring-1 ring-teal-600/20",
-      price: "$49",
+      price: `$${PER_CLIENT_MONTHLY_USD}`,
       suffix: "/client/mo",
       subtext: "For freelancers & boutique agencies running monthly retainers.",
       featured: true,
@@ -72,7 +55,7 @@ export function LandingPricing() {
       name: "Unlimited Agency",
       badge: "Full Roster",
       badgeTone: "bg-indigo-50 text-indigo-800 border-indigo-200",
-      price: "$249",
+      price: `$${AGENCY_MONTHLY_USD}`,
       suffix: "/mo",
       subtext: "For growing agencies managing unlimited client accounts.",
       featured: false,
@@ -191,36 +174,7 @@ export function LandingPricing() {
           </Link>
         </div>
 
-        {/* FAQs */}
-        <div className="mt-20 pt-16 border-t border-slate-200/80">
-          <div className="text-center mb-10">
-            <h3 className="font-display text-2xl font-semibold text-slate-900">
-              Frequently asked questions
-            </h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Everything you need to know about SearchProof for agencies.
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
-            {FAQS.map((faq, i) => (
-              <div
-                key={i}
-                className="rounded-[14px] border border-slate-200/70 bg-white p-6 shadow-xs"
-              >
-                <div className="flex items-start gap-2.5">
-                  <HelpCircle className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-sm text-slate-900">{faq.q}</p>
-                    <p className="mt-2 text-xs leading-relaxed text-slate-500">
-                      {faq.a}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <FaqList level={3} />
       </div>
     </section>
   );

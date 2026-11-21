@@ -65,7 +65,7 @@ export function LandingHeroInteractive() {
           className="mb-5 inline-flex items-center gap-2 rounded-full border border-teal-200/60 bg-teal-50/80 px-3.5 py-1.5 text-xs font-semibold text-teal-800 backdrop-blur-sm shadow-[var(--shadow-xs)]"
         >
           <span className="status-dot status-dot-pulse bg-teal-500" />
-          Monthly proof of work for SEO freelancers
+          White-label reports for agencies and freelancers
         </div>
 
         {/* Headline */}
@@ -93,8 +93,8 @@ export function LandingHeroInteractive() {
           ref={subheadRef}
           className="mt-6 max-w-lg text-[16px] leading-relaxed text-slate-600 sm:text-[17px]"
         >
-          Log what you shipped, pull GA4 and Search Console, and edit a narrative that labels correlation.
-          Then export a branded PDF. Nothing is emailed until you mark the draft ready.
+          Log what you shipped, pull GA4 and Search Console, and edit the write-up before the PDF goes
+          out. Nothing is emailed until you mark the draft ready.
         </p>
 
         {/* CTAs */}

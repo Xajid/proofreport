@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree, Sora, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { PUBLIC_PAGES, SITE_URL } from "@/lib/site-content";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -22,9 +23,25 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SearchProof — White-label monthly SEO reports for freelancers",
-  description:
-    "Log the work you shipped, pull GA4 and Search Console, edit a correlation-labeled narrative, then email a branded PDF.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: PUBLIC_PAGES.home.absoluteTitle,
+    template: "%s · SearchProof",
+  },
+  description: PUBLIC_PAGES.home.description,
+  applicationName: "SearchProof",
+  openGraph: {
+    type: "website",
+    siteName: "SearchProof",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -1,12 +1,9 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, LegalSection } from "@/components/legal-page";
+import { pageMeta } from "@/lib/seo";
+import { PUBLIC_PAGES } from "@/lib/site-content";
 
-export const metadata: Metadata = {
-  title: "Privacy policy — SearchProof",
-  description:
-    "How SearchProof collects, uses, and stores account data and Google Analytics and Search Console data.",
-};
+export const metadata = pageMeta(PUBLIC_PAGES.privacy);
 
 export default function PrivacyPage() {
   return (
